@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>voltage.</title>
+  <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+/>
+
 
   <!-- Your original styles -->
   <link rel="stylesheet" href="/config/custom.css">
@@ -53,6 +58,34 @@
 </head>
 
 <body>
+  <nav class="navbar">
+  <div class="nav-left">
+    <a href="/" class="nav-logo">
+      <i class="fa-solid fa-bolt"></i> voltage.
+    </a>
+  </div>
+
+  <div class="nav-right">
+    <a href="/games.html" class="nav-link">
+      <i class="fa-solid fa-gamepad"></i> Games
+    </a>
+
+    <div class="nav-dropdown">
+      <span class="nav-link">
+        <i class="fa-solid fa-comments"></i> Chat <i class="fa-solid fa-caret-down"></i>
+      </span>
+      <div class="dropdown-menu">
+        <a href="/server1.html">
+          <i class="fa-solid fa-server"></i> Server 1
+        </a>
+        <a href="/server2.html">
+          <i class="fa-solid fa-server"></i> Server 2
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
   <div class="center">
     <h1 id="title">voltage.</h1>
     <p id="sentence"></p>
