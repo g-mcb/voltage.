@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>native. chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.21/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-router/0.7.11/vue-router.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #003ba8;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      #vue {
+        width: 100%;
+        max-width: 600px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,.25);
+        overflow: hidden;
+      }
+
+      h1 {
+        margin: 0;
+        padding: 20px;
+        background-color: #002263;
+        color: white;
+        text-align: center;
+        font-size: 2.5em;
+      }
+
+      .messagesWrapper {
+        padding: 20px;
+        max-height: 400px;
+        overflow-y: auto;
+        border-bottom: 1px solid #d0d6e5;
+      }
+
+      .message {
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 6px;
+      }
+
+      .message p {
+        margin: 0;
+      }
+
+      .message.me {
+        background-color: #002263;
+        color: white;
+        text-align: right;
+      }
+
+      input {
+        padding: 10px;
+        border: 1px solid #bbb;
+        border-radius: 4px;
+        width: calc(100% - 90px);
+        margin: 10px;
+      }
+
+      button {
+        padding: 10px;
+        border: none;
+        background-color: #002263;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #001742;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="vue">
+      <h1>native. chat</h1>
+      <router-view></router-view>
+    </div>
+
+    <!-- Firebase SDK v9 Modular -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+      import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+
+      // Firebase config
+      const firebaseConfig = {
+        apiKey: "AIzaSyD-bw9u8YGPHJgwmYrsNHmNSeuuAK3-lqI",
+        authDomain: "real-time-chat-71cf6.firebaseapp.com",
+        projectId: "real-time-chat-71cf6",
+        storageBucket: "real-time-chat-71cf6.appspot.com",
+        messagingSenderId: "10880205138",
+        appId: "1:10880205138:web:d234deab249fb2e2823a8b",
+        measurementId: "G-XYQT3E8HYV",
+        databaseURL: "https://real-time-chat-71cf6-default-rtdb.firebaseio.com/"
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      const messagesRef = ref(database, 'messages');
+
+      // Chat logic for Vue
+      const newMessage = { text: "", username: "" };
+
+      const messenger = Vue.extend({
+        template: `
+          <div>
+            <div class="messagesWrapper" id="chat-box">
+              <div v-for="msg in messages" :class="['message', msg.username === newMessage.username ? 'me' : '']">
+                <p><strong>{{ msg.username }}:</strong> {{ msg.text }}</p>
+              </div>
+            </div>
+            <input v-model="newMessage.text" @keyup.enter="addMessage()" placeholder="Type your message...">
+            <button @click="addMessage()">Send</button>
+          </div>
+        `,
+        data() {
+          return { messages: [], newMessage };
+        },
+        created() {
+          // Listen to Firebase messages
+          onChildAdded(messagesRef, snapshot => {
+            this.messages.push(snapshot.val());
+            this.$nextTick(() => {
+              const chatBox = document.getElementById('chat-box');
+              chatBox.scrollTop = chatBox.scrollHeight;
+            });
+          });
+        },
+        methods: {
+          addMessage() {
+            if (!this.newMessage.text.trim()) return;
+
+            const message = {
+              username: this.newMessage.username,
+              text: this.newMessage.text,
+              timestamp: Date.now()
+            };
+            push(messagesRef, message);
+            this.newMessage.text = '';
+          }
+        }
+      });
+
+      const nameForm = Vue.extend({
+        template: `
+          <div>
+            <h2>Enter your username:</h2>
+            <input v-model="newMessage.username" @keyup.enter="go()">
+            <button @click="go()">Continue</button>
+          </div>
+        `,
+        data() { return { newMessage }; },
+        methods: {
+          go() {
+            if (this.newMessage.username.trim()) {
+              router.go("/messenger");
+            }
+          }
+        }
+      });
+
+      const router = new VueRouter();
+      router.map({
+        "/": { component: nameForm },
+        "/messenger": { component: messenger }
+      });
+      router.start(Vue, "#vue");
+    </script>
+  </body>
+</html>
