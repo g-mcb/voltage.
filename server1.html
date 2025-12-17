@@ -8,6 +8,11 @@
     <script src="https://cdn.firebase.com/js/client/2.4.2/firebase.js"></script>
     <script src="https://cdn.jsdelivr.net/vuefire/1.0.0/vuefire.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-router/0.7.11/vue-router.js"></script>
+    <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+/>
+
 
     <style>
       body {
@@ -111,6 +116,34 @@
   </head>
 
   <body>
+    <nav class="navbar">
+  <div class="nav-left">
+    <a href="/" class="nav-logo">
+      <i class="fa-solid fa-bolt"></i> voltage.
+    </a>
+  </div>
+
+  <div class="nav-right">
+    <a href="/games.html" class="nav-link">
+      <i class="fa-solid fa-gamepad"></i> Games
+    </a>
+
+    <div class="nav-dropdown">
+      <span class="nav-link">
+        <i class="fa-solid fa-comments"></i> Chat <i class="fa-solid fa-caret-down"></i>
+      </span>
+      <div class="dropdown-menu">
+        <a href="/server1.html">
+          <i class="fa-solid fa-server"></i> Server 1
+        </a>
+        <a href="/server2.html">
+          <i class="fa-solid fa-server"></i> Server 2
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
     <div id="vue">
       <h1>voltage. chat</h1>
       <router-view></router-view>
