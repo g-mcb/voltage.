@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>voltage.</title>
+
+  <!-- Your original styles -->
+  <link rel="stylesheet" href="/config/custom.css">
+  <link rel="stylesheet" href="/config/main.css">
+
+  <style>
+    /* Page-specific only */
+    #title {
+      font-size: 4.5rem;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    #sentence {
+      margin-top: 8px;
+      font-size: 1.1rem;
+      opacity: 0.85;
+    }
+
+    .shortcuts {
+      display: flex;
+      gap: 20px;
+      margin-top: 50px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .shortcut {
+      width: 240px;
+      height: 120px;
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .shortcut:hover {
+      border: 2px solid var(--accent-color);
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="center">
+    <h1 id="title">voltage.</h1>
+    <p id="sentence"></p>
+  </div>
+
+
+  <script>
+    const dumbSentences = [
+      "powered by vibes only",
+      "this probably shouldn't exist",
+      "now with extra nothing",
+      "made by accident",
+      "100% untested",
+      "runs on hope",
+      "do not question it",
+      "this was intentional (lie)",
+      "certified silly",
+      "bro what is this",
+      "e",
+      "idk why this exists",
+      "okay"
+    ];
+
+    document.getElementById("sentence").textContent =
+      dumbSentences[Math.floor(Math.random() * dumbSentences.length)];
+  </script>
+</body>
+</html>
