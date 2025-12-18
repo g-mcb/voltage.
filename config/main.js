@@ -1,58 +1,104 @@
 import "/./config/custom.js";
 
-var currentPageTitle = document.title;
-document.title = `${currentPageTitle} | ${sitename}`;
+/* -------------------------
+   Page title setup
+-------------------------- */
+document.title = `${document.title} | ${sitename}`;
 
-let gamesData = [];
-
-function displayFilteredGames(filteredGames) {
+/* -------------------------
+   Wait for DOM to load
+-------------------------- */
+document.addEventListener("DOMContentLoaded", () => {
   const gamesContainer = document.getElementById("gamesContainer");
-  gamesContainer.innerHTML = "";
+  const searchInput = document.getElementById("searchInput");
 
-  filteredGames.forEach((game) => {
-    const gameDiv = document.createElement("div");
-    gameDiv.classList.add("game");
+  // If this page doesn't use games, exit cleanly
+  if (!gamesContainer) return;
 
-    const gameImage = document.createElement("img");
-    gameImage.src = `/games/${game.url}/${game.image}`;
-    gameImage.alt = game.name;
+  let gamesData = [];
 
-    gameImage.onclick = () => {
-      window.location.href = `play.html?game=${game.url}`;
-    };
+  /* -------------------------
+     Render games
+  -------------------------- */
+  function renderGames(games) {
+    gamesContainer.innerHTML = "";
 
-    const gameName = document.createElement("p");
-    gameName.textContent = game.name;
+    if (!games.length) {
+      gamesContainer.innerHTML =
+        "<p style='color:white;text-align:center;'>No games found.</p>";
+      return;
+    }
 
-    gameDiv.appendChild(gameImage);
-    gameDiv.appendChild(gameName);
-    gamesContainer.appendChild(gameDiv);
-  });
-}
+    games.forEach((game) => {
+      // Basic path safety
+      if (!/^[a-z0-9\-]+$/i.test(game.url)) return;
 
-function handleSearchInput() {
-  const searchValue = document
-    .getElementById("searchInput")
-    .value.toLowerCase();
+      const gameDiv = document.createElement("div");
+      gameDiv.className = "game";
 
-  const filteredGames = gamesData.filter((game) =>
-    game.name.toLowerCase().includes(searchValue)
-  );
+      const img = document.createElement("img");
+      img.src = `/games/${game.url}/${game.image}`;
+      img.alt = game.name;
+      img.loading = "lazy";
 
-  displayFilteredGames(filteredGames);
-}
+      img.addEventListener("click", () => {
+        window.location.href = `play.html?game=${game.url}`;
+      });
 
-fetch("/config/games.json")
-  .then((res) => res.json())
-  .then((data) => {
-    gamesData = data;
-    displayFilteredGames(data);
-  })
-  .catch((err) => console.error("Failed to load games.json", err));
+      const name = document.createElement("p");
+      name.textContent = game.name;
 
-document
-  .getElementById("searchInput")
-  .addEventListener("input", handleSearchInput);
+      gameDiv.appendChild(img);
+      gameDiv.appendChild(name);
+      gamesContainer.appendChild(gameDiv);
+    });
+  }
 
-document.getElementById("title").innerHTML = sitename;
-document.getElementById("subtitle").innerHTML = subtext;
+  /* -------------------------
+     Search handling
+  -------------------------- */
+  function handleSearch() {
+    const query = searchInput.value.toLowerCase().trim();
+
+    const filtered = gamesData.filter((game) =>
+      game.name.toLowerCase().includes(query)
+    );
+
+    renderGames(filtered);
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener("input", handleSearch);
+  }
+
+  /* -------------------------
+     Load games.json
+  -------------------------- */
+  fetch("/config/games.json")
+    .then((res) => {
+      if (!res.ok) throw new Error("Failed to load games.json");
+      return res.json();
+    })
+    .then((data) => {
+      if (!Array.isArray(data)) {
+        throw new Error("games.json must be an array");
+      }
+
+      gamesData = data;
+      renderGames(gamesData);
+    })
+    .catch((err) => {
+      console.error(err);
+      gamesContainer.innerHTML =
+        "<p style='color:red;text-align:center;'>Failed to load games.</p>";
+    });
+
+  /* -------------------------
+     Page text
+  -------------------------- */
+  const titleEl = document.getElementById("title");
+  const subtitleEl = document.getElementById("subtitle");
+
+  if (titleEl) titleEl.textContent = sitename;
+  if (subtitleEl) subtitleEl.innerHTML = subtitleEl.innerHTML;
+});
