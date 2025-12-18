@@ -79,8 +79,14 @@
       }
 
       .message:not([data-person="Me"]) {
-        background-color: #e3e8f5;
-      }
+  background-color: #e3e8f5;
+  color: #000; /* makes text black */
+}
+
+.message:not([data-person="Me"]) span {
+  color: #000; /* username black too */
+}
+
 
       input {
         padding: 10px;
