@@ -9,7 +9,7 @@ This is still a bit rough, so stay with us! This is an unblocked games site in t
 
 ### Contributing:
 
-If you have any suggestions for improvements or would like to contribute and add games, a better chat system, a proxy, etc., please look at 
+If you have any suggestions for improvements or would like to contribute and add games, a better chat system, a proxy, etc., please look at [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### License:
 
