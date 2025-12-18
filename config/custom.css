@@ -87,3 +87,12 @@ body {
   padding-top: 64px;
 }
 
+.game {
+  cursor: pointer;
+}
+.game * {
+  pointer-events: none;
+}
+
+
+
