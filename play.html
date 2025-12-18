@@ -147,26 +147,57 @@
     </div>
 
     <script>
-      const params = new URLSearchParams(window.location.search);
-      const game = params.get("game");
+  const params = new URLSearchParams(window.location.search);
+  const game = params.get("game");
 
-      if (!game) {
-        window.location.href = "/games.html";
+  if (!game) {
+    window.location.href = "/games.html";
+  }
+
+  const frame = document.getElementById("gameFrame");
+  const gameNameEl = document.getElementById("gameName");
+  const gameIconEl = document.getElementById("gameIcon");
+
+  // Load the game iframe
+  frame.src = `/games/${game}/index.html`;
+
+  /* --------------------------------
+     Load games.html to get metadata
+  --------------------------------- */
+  fetch("/games.html")
+    .then((res) => res.text())
+    .then((html) => {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+
+      const gameCard = doc.querySelector(
+        `.game[data-url="${CSS.escape(game)}"]`
+      );
+
+      if (!gameCard) {
+        gameNameEl.textContent = game;
+        return;
       }
 
-      const frame = document.getElementById("gameFrame");
-      frame.src = `/games/${game}/index.html`;
+      const name = gameCard.dataset.name;
+      const img = gameCard.querySelector("img");
 
-      document.getElementById("gameName").textContent = game;
-      document.getElementById("gameIcon").src = `/games/${game}/logo.png`;
+      if (name) gameNameEl.textContent = name;
+      if (img && img.src) gameIconEl.src = img.src;
+    })
+    .catch(() => {
+      // Fallback if fetch fails
+      gameNameEl.textContent = game;
+    });
 
-      function fullscreenGame() {
-        frame.requestFullscreen?.();
-      }
+  function fullscreenGame() {
+    frame.requestFullscreen?.();
+  }
 
-      function reloadGame() {
-        frame.src = frame.src;
-      }
-    </script>
+  function reloadGame() {
+    frame.src = frame.src;
+  }
+</script>
+
   </body>
 </html>
