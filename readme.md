@@ -7,13 +7,9 @@
 
 This is still a bit rough, so stay with us! This is an unblocked games site in the making.
 
-### Usage:
-
-After customizing the template according to your preferences, your unblocked games site is ready for use. Users can navigate through the site, play games, and enjoy the content.
-
 ### Contributing:
 
-If you have any suggestions for improvements or would like to contribute and add games (or a proxy??), 
+If you have any suggestions for improvements or would like to contribute and add games, a better chat system, a proxy, etc., please look at 
 
 ### License:
 
