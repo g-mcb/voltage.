@@ -3,36 +3,177 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>voltage.</title>
+    <title>voltage. | play</title>
 
-    <script src="config/main.js" type="module"></script>
+    <!-- Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+
+    <!-- Your styles -->
+    <link rel="stylesheet" href="/config/main.css" />
+    <link rel="stylesheet" href="/config/custom.css" />
 
     <style>
       body {
         margin: 0;
-        padding: 0;
+        background: #0b0f1a;
+        color: white;
+      }
+
+      /* -------- Page Layout -------- */
+      .play-wrapper {
+        max-width: 1200px;
+        margin: 100px auto 0;
+        padding: 0 20px;
+      }
+
+      .game-shell {
+        background: #000;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      }
+
+      /* -------- Iframe -------- */
+      .game-frame {
+        width: 100%;
+        height: 600px;
+        border: none;
+        display: block;
         background: black;
       }
 
-      iframe {
-        width: 100%;
-        height: 100vh;
-        border: none;
+      /* -------- Bottom Bar -------- */
+      .game-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #1b1f2e;
+        padding: 10px 14px;
+      }
+
+      .game-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .game-info img {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+      }
+
+      .game-info span {
+        font-weight: 600;
+      }
+
+      .game-actions i {
+        cursor: pointer;
+        font-size: 18px;
+        margin-left: 14px;
+        opacity: 0.8;
+        transition: opacity 0.15s;
+      }
+
+      .game-actions i:hover {
+        opacity: 1;
+      }
+
+      /* -------- Responsive -------- */
+      @media (max-width: 768px) {
+        .game-frame {
+          height: 70vh;
+        }
       }
     </style>
   </head>
-  <body>
-    <iframe id="gameFrame"></iframe>
 
+  <body>
+    <!-- NAVBAR (same as games.html) -->
+    <nav class="navbar">
+      <div class="nav-left">
+        <a href="/" class="nav-logo">
+          <i class="fa-solid fa-bolt"></i> voltage.
+        </a>
+      </div>
+
+      <div class="nav-right">
+        <a href="/games.html" class="nav-link">
+          <i class="fa-solid fa-gamepad"></i> Games
+        </a>
+
+        <div class="nav-dropdown">
+          <span class="nav-link">
+            <i class="fa-solid fa-comments"></i> Chat
+            <i class="fa-solid fa-caret-down"></i>
+          </span>
+          <div class="dropdown-menu">
+            <a href="/server1.html">
+              <i class="fa-solid fa-server"></i> Server 1
+            </a>
+            <a href="/server2.html">
+              <i class="fa-solid fa-server"></i> Server 2
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- GAME PLAYER -->
+    <div class="play-wrapper">
+      <div class="game-shell">
+        <iframe id="gameFrame" class="game-frame"></iframe>
+
+        <div class="game-bar">
+          <div class="game-info">
+            <img id="gameIcon" src="" alt="" />
+            <span id="gameName">Loading...</span>
+          </div>
+
+          <div class="game-actions">
+            <i
+              class="fa-solid fa-rotate-right"
+              title="Reload"
+              onclick="reloadGame()"
+            ></i>
+            <i
+              class="fa-solid fa-expand"
+              title="Fullscreen"
+              onclick="fullscreenGame()"
+            ></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCRIPT -->
     <script>
       const params = new URLSearchParams(window.location.search);
       const game = params.get("game");
 
       if (!game) {
         alert("Game not specified.");
-        window.location.href = "/";
-      } else {
-        document.getElementById("gameFrame").src = `/games/${game}/index.html`;
+        window.location.href = "/games.html";
+      }
+
+      const frame = document.getElementById("gameFrame");
+      frame.src = `/games/${game}/index.html`;
+
+      // Optional metadata (simple auto-fill)
+      document.getElementById("gameName").textContent = game;
+      document.getElementById(
+        "gameIcon"
+      ).src = `/games/${game}/logo.png`;
+
+      function fullscreenGame() {
+        if (frame.requestFullscreen) frame.requestFullscreen();
+      }
+
+      function reloadGame() {
+        frame.src = frame.src;
       }
     </script>
   </body>
