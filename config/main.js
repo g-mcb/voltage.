@@ -5,23 +5,23 @@ import "/./config/custom.js";
 -------------------------- */
 document.title = `${document.title} | ${sitename}`;
 
-/* -------------------------
-   DOM ready
--------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
-  const games = document.querySelectorAll(".game");
+  const gamesContainer = document.getElementById("gamesContainer");
   const searchInput = document.getElementById("searchInput");
 
-  /* -------------------------
-     Click to play
-  -------------------------- */
-  games.forEach((game) => {
-    const url = game.dataset.url;
+  if (!gamesContainer) return;
 
-    game.addEventListener("click", () => {
-      if (!/^[a-z0-9\-]+$/i.test(url)) return;
-      window.location.href = `play.html?game=${url}`;
-    });
+  /* -------------------------
+     Click handling (delegated)
+  -------------------------- */
+  gamesContainer.addEventListener("click", (e) => {
+    const gameCard = e.target.closest(".game");
+    if (!gameCard || !gamesContainer.contains(gameCard)) return;
+
+    const url = gameCard.dataset.url;
+    if (!url || !/^[a-z0-9\-]+$/i.test(url)) return;
+
+    window.location.href = `play.html?game=${url}`;
   });
 
   /* -------------------------
@@ -29,11 +29,11 @@ document.addEventListener("DOMContentLoaded", () => {
   -------------------------- */
   if (searchInput) {
     searchInput.addEventListener("input", () => {
-      const query = searchInput.value.toLowerCase();
+      const query = searchInput.value.toLowerCase().trim();
 
-      games.forEach((game) => {
+      document.querySelectorAll(".game").forEach((game) => {
         const name = game.dataset.name.toLowerCase();
-        game.style.display = name.includes(query) ? "block" : "none";
+        game.hidden = !name.includes(query);
       });
     });
   }
