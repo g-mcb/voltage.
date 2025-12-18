@@ -2,14 +2,20 @@
 <html>
   <head>
     <title>voltage. - chat</title>
+
+    <!-- Vue + Router -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.21/vue.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-router/0.7.11/vue-router.js"></script>
+
+    <!-- Icons -->
     <link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-/>
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+
+    <!-- Your site styles -->
     <link rel="stylesheet" href="/config/custom.css">
-  <link rel="stylesheet" href="/config/main.css">
+    <link rel="stylesheet" href="/config/main.css">
 
     <style>
       body {
@@ -47,42 +53,42 @@
         overflow-y: auto;
         border-bottom: 1px solid #d0d6e5;
       }
-.message {
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 6px;
-}
 
-.message span {
-  font-size: .85em;
-  color: #555;
-}
+      .message {
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 6px;
+      }
 
-.message p {
-  margin: 0;
-}
+      .message span {
+        font-size: .85em;
+        color: #555;
+      }
 
-/* ME */
-.message.me {
-  background-color: #002263;
-  color: white;
-  text-align: right;
-}
+      .message p {
+        margin: 0;
+      }
 
-.message.me span {
-  color: #cfd6ff;
-}
+      /* ME */
+      .message.me {
+        background-color: #002263;
+        color: white;
+        text-align: right;
+      }
 
-/* OTHERS */
-.message:not(.me) {
-  background-color: #e3e8f5;
-  color: #000;
-}
+      .message.me span {
+        color: #cfd6ff;
+      }
 
-.message:not(.me) span {
-  color: #000;
-}
+      /* OTHERS */
+      .message:not(.me) {
+        background-color: #e3e8f5;
+        color: #000;
+      }
 
+      .message:not(.me) span {
+        color: #000;
+      }
 
       input {
         padding: 10px;
@@ -106,125 +112,109 @@
       }
     </style>
   </head>
+
   <body>
+    <!-- NAVBAR -->
     <nav class="navbar">
-  <div class="nav-left">
-    <a href="/" class="nav-logo">
-      <i class="fa-solid fa-bolt"></i> voltage.
-    </a>
-  </div>
-
-  <div class="nav-right">
-    <a href="/games.html" class="nav-link">
-      <i class="fa-solid fa-gamepad"></i> Games
-    </a>
-
-    <div class="nav-dropdown">
-      <span class="nav-link">
-        <i class="fa-solid fa-comments"></i> Chat <i class="fa-solid fa-caret-down"></i>
-      </span>
-      <div class="dropdown-menu">
-        <a href="/server1.html">
-          <i class="fa-solid fa-server"></i> Server 1 (Recommended)
-        </a>
-        <a href="/server2.html">
-          <i class="fa-solid fa-server"></i> Server 2
+      <div class="nav-left">
+        <a href="/" class="nav-logo">
+          <i class="fa-solid fa-bolt"></i> voltage.
         </a>
       </div>
-    </div>
-  </div>
-</nav>
 
+      <div class="nav-right">
+        <a href="/games.html" class="nav-link">
+          <i class="fa-solid fa-gamepad"></i> Games
+        </a>
+
+        <div class="nav-dropdown">
+          <span class="nav-link">
+            <i class="fa-solid fa-comments"></i> Chat
+            <i class="fa-solid fa-caret-down"></i>
+          </span>
+          <div class="dropdown-menu">
+            <a href="/server1.html">
+              <i class="fa-solid fa-server"></i> Server 1 (Recommended)
+            </a>
+            <a href="/server2.html">
+              <i class="fa-solid fa-server"></i> Server 2
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- APP -->
     <div id="vue">
       <h1>voltage. chat</h1>
       <router-view></router-view>
     </div>
 
-    <!-- Firebase SDK v9 Modular -->
+    <!-- FIREBASE v9 -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
       import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
-      // Firebase config
       const firebaseConfig = {
         apiKey: "AIzaSyD-bw9u8YGPHJgwmYrsNHmNSeuuAK3-lqI",
         authDomain: "real-time-chat-71cf6.firebaseapp.com",
+        databaseURL: "https://real-time-chat-71cf6-default-rtdb.firebaseio.com/",
         projectId: "real-time-chat-71cf6",
         storageBucket: "real-time-chat-71cf6.appspot.com",
         messagingSenderId: "10880205138",
-        appId: "1:10880205138:web:d234deab249fb2e2823a8b",
-        measurementId: "G-XYQT3E8HYV",
-        databaseURL: "https://real-time-chat-71cf6-default-rtdb.firebaseio.com/"
+        appId: "1:10880205138:web:d234deab249fb2e2823a8b"
       };
 
-      // Initialize Firebase
       const app = initializeApp(firebaseConfig);
-      const database = getDatabase(app);
-      const messagesRef = ref(database, 'messages');
+      const db = getDatabase(app);
+      const messagesRef = ref(db, "messages");
 
-      // Chat logic for Vue
       const newMessage = { text: "", username: "" };
 
       const messenger = Vue.extend({
-  template: `
-    <div>
-      <div class="messagesWrapper" id="chat-box">
-        <div
-          v-for="msg in messages"
-          :class="['message', msg.username === newMessage.username ? 'me' : '']"
-        >
-          <span>{{ msg.username === newMessage.username ? 'Me' : msg.username }}</span>
-          <p>{{ msg.text }}</p>
-        </div>
-      </div>
+        template: `
+          <div>
+            <div class="messagesWrapper" id="chat-box">
+              <div
+                v-for="msg in messages"
+                :class="['message', msg.username === newMessage.username ? 'me' : '']"
+              >
+                <span>{{ msg.username === newMessage.username ? 'Me' : msg.username }}</span>
+                <p>{{ msg.text }}</p>
+              </div>
+            </div>
 
-      <input
-        v-model="newMessage.text"
-        @keyup.enter="addMessage()"
-        placeholder="Type your message..."
-      >
-      <button @click="addMessage()">Send</button>
-    </div>
-  `,
-  data() {
-    return { messages: [], newMessage };
-  },
-  created() {
-    onChildAdded(messagesRef, snapshot => {
-      this.messages.push(snapshot.val());
-      this.$nextTick(() => {
-        const chatBox = document.getElementById("chat-box");
-        chatBox.scrollTop = chatBox.scrollHeight;
-      });
-    });
-  },
-  methods: {
-    addMessage() {
-      if (!this.newMessage.text.trim()) return;
-
-      push(messagesRef, {
-        username: this.newMessage.username,
-        text: this.newMessage.text,
-        timestamp: Date.now()
-      });
-
-      this.newMessage.text = "";
-    }
-  }
-});
-
+            <input
+              v-model="newMessage.text"
+              @keyup.enter="addMessage()"
+              placeholder="Type your message..."
+            >
+            <button @click="addMessage()">Send</button>
+          </div>
+        `,
+        data() {
+          return { messages: [], newMessage };
+        },
+        created() {
+          onChildAdded(messagesRef, snap => {
+            this.messages.push(snap.val());
+            this.$nextTick(() => {
+              const box = document.getElementById("chat-box");
+              box.scrollTop = box.scrollHeight;
+            });
+          });
         },
         methods: {
           addMessage() {
             if (!this.newMessage.text.trim()) return;
 
-            const message = {
+            push(messagesRef, {
               username: this.newMessage.username,
               text: this.newMessage.text,
               timestamp: Date.now()
-            };
-            push(messagesRef, message);
-            this.newMessage.text = '';
+            });
+
+            this.newMessage.text = "";
           }
         }
       });
@@ -232,12 +222,14 @@
       const nameForm = Vue.extend({
         template: `
           <div>
-            <h2>Enter your username:</h2>
+            <h2>What’s your username?</h2>
             <input v-model="newMessage.username" @keyup.enter="go()">
             <button @click="go()">Continue</button>
           </div>
         `,
-        data() { return { newMessage }; },
+        data() {
+          return { newMessage };
+        },
         methods: {
           go() {
             if (this.newMessage.username.trim()) {
