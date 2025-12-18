@@ -16,42 +16,46 @@
     <link rel="stylesheet" href="/config/custom.css" />
 
     <style>
+      /* Use site background */
       body {
         margin: 0;
-        background: #0b0f1a;
-        color: white;
+        background: var(--background-color);
+        color: var(--text-color);
       }
 
-      /* -------- Page Layout -------- */
+      /* Layout */
       .play-wrapper {
         max-width: 1200px;
-        margin: 100px auto 0;
-        padding: 0 20px;
+        margin: 96px auto 0;
+        padding: 0 24px;
       }
 
+      /* Card */
       .game-shell {
-        background: #000;
-        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(10px);
       }
 
-      /* -------- Iframe -------- */
+      /* Iframe */
       .game-frame {
         width: 100%;
         height: 600px;
         border: none;
         display: block;
-        background: black;
+        background: #000;
       }
 
-      /* -------- Bottom Bar -------- */
+      /* Bottom bar */
       .game-bar {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: #1b1f2e;
-        padding: 10px 14px;
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.06);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
       }
 
       .game-info {
@@ -64,17 +68,19 @@
         width: 32px;
         height: 32px;
         border-radius: 8px;
+        background: rgba(255, 255, 255, 0.1);
       }
 
       .game-info span {
         font-weight: 600;
+        font-size: 15px;
       }
 
       .game-actions i {
         cursor: pointer;
         font-size: 18px;
         margin-left: 14px;
-        opacity: 0.8;
+        opacity: 0.7;
         transition: opacity 0.15s;
       }
 
@@ -82,7 +88,6 @@
         opacity: 1;
       }
 
-      /* -------- Responsive -------- */
       @media (max-width: 768px) {
         .game-frame {
           height: 70vh;
@@ -92,7 +97,7 @@
   </head>
 
   <body>
-    <!-- NAVBAR (same as games.html) -->
+    <!-- NAVBAR (unchanged, your CSS handles it) -->
     <nav class="navbar">
       <div class="nav-left">
         <a href="/" class="nav-logo">
@@ -122,54 +127,41 @@
       </div>
     </nav>
 
-    <!-- GAME PLAYER -->
+    <!-- PLAYER -->
     <div class="play-wrapper">
       <div class="game-shell">
         <iframe id="gameFrame" class="game-frame"></iframe>
 
         <div class="game-bar">
           <div class="game-info">
-            <img id="gameIcon" src="" alt="" />
+            <img id="gameIcon" />
             <span id="gameName">Loading...</span>
           </div>
 
           <div class="game-actions">
-            <i
-              class="fa-solid fa-rotate-right"
-              title="Reload"
-              onclick="reloadGame()"
-            ></i>
-            <i
-              class="fa-solid fa-expand"
-              title="Fullscreen"
-              onclick="fullscreenGame()"
-            ></i>
+            <i class="fa-solid fa-rotate-right" onclick="reloadGame()"></i>
+            <i class="fa-solid fa-expand" onclick="fullscreenGame()"></i>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- SCRIPT -->
     <script>
       const params = new URLSearchParams(window.location.search);
       const game = params.get("game");
 
       if (!game) {
-        alert("Game not specified.");
         window.location.href = "/games.html";
       }
 
       const frame = document.getElementById("gameFrame");
       frame.src = `/games/${game}/index.html`;
 
-      // Optional metadata (simple auto-fill)
       document.getElementById("gameName").textContent = game;
-      document.getElementById(
-        "gameIcon"
-      ).src = `/games/${game}/logo.png`;
+      document.getElementById("gameIcon").src = `/games/${game}/logo.png`;
 
       function fullscreenGame() {
-        if (frame.requestFullscreen) frame.requestFullscreen();
+        frame.requestFullscreen?.();
       }
 
       function reloadGame() {
