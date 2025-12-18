@@ -6,10 +6,12 @@
     <title>voltage.</title>
 
     <script src="config/main.js" type="module"></script>
+
     <style>
       body {
         margin: 0;
         padding: 0;
+        background: black;
       }
 
       iframe {
@@ -23,17 +25,14 @@
     <iframe id="gameFrame"></iframe>
 
     <script>
-      var serverUrl1 = "https://gms.parcoil.com";
-      const queryString = window.location.search;
-      const urlParams = new URLSearchParams(queryString);
-      const gameUrl = urlParams.get("gameurl");
+      const params = new URLSearchParams(window.location.search);
+      const game = params.get("game");
 
-      if (!gameUrl) {
-        alert("Game URL not provided!");
-        window.location.href = "/"; // Redirect to homepage if game URL is missing
+      if (!game) {
+        alert("Game not specified.");
+        window.location.href = "/";
       } else {
-        const embedUrl = `${serverUrl1}/${gameUrl}`;
-        document.getElementById("gameFrame").src = embedUrl;
+        document.getElementById("gameFrame").src = `/games/${game}/index.html`;
       }
     </script>
   </body>
