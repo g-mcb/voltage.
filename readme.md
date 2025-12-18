@@ -13,16 +13,8 @@ After customizing the template according to your preferences, your unblocked gam
 
 ### Contributing:
 
-If you have any suggestions for improvements or would like to contribute to this template, feel free to submit a pull request or open an issue.
+If you have any suggestions for improvements or would like to contribute and add games (or a proxy??), 
 
 ### License:
 
 This project is licensed under the [MIT License](LICENSE).
-
-### Disclaimer:
-
-do not remove the "a site by parcoil network" text at the bottom of the site, as doing so violates our Terms of Service.
-
----
-
-Feel free to modify this README according to your specific requirements. If you have any further questions or need assistance, don't hesitate to reach out. Happy coding!
