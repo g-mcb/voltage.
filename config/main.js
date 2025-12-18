@@ -1,26 +1,31 @@
-import "/./config/custom.js";
-
 /* -------------------------
    Page title
 -------------------------- */
-document.title = `${document.title} | ${sitename}`;
+document.title = document.title.replace("voltage.", "voltage.");
 
+/* -------------------------
+   DOM ready
+-------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
   const gamesContainer = document.getElementById("gamesContainer");
   const searchInput = document.getElementById("searchInput");
 
-  if (!gamesContainer) return;
+  if (!gamesContainer) {
+    console.error("gamesContainer not found");
+    return;
+  }
 
   /* -------------------------
      Click handling (delegated)
   -------------------------- */
   gamesContainer.addEventListener("click", (e) => {
-    const gameCard = e.target.closest(".game");
-    if (!gameCard || !gamesContainer.contains(gameCard)) return;
+    const game = e.target.closest(".game");
+    if (!game) return;
 
-    const url = gameCard.dataset.url;
-    if (!url || !/^[a-z0-9\-]+$/i.test(url)) return;
+    const url = game.dataset.url;
+    if (!url) return;
 
+    console.log("Launching game:", url);
     window.location.href = `play.html?game=${url}`;
   });
 
@@ -29,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
   -------------------------- */
   if (searchInput) {
     searchInput.addEventListener("input", () => {
-      const query = searchInput.value.toLowerCase().trim();
+      const query = searchInput.value.toLowerCase();
 
       document.querySelectorAll(".game").forEach((game) => {
         const name = game.dataset.name.toLowerCase();
@@ -37,10 +42,4 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
-
-  /* -------------------------
-     Page text
-  -------------------------- */
-  const titleEl = document.getElementById("title");
-  if (titleEl) titleEl.textContent = sitename;
 });
