@@ -1,31 +1,32 @@
-/* -------------------------
-   Page title
--------------------------- */
-document.title = document.title.replace("voltage.", "voltage.");
-
-/* -------------------------
-   DOM ready
--------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
   const gamesContainer = document.getElementById("gamesContainer");
   const searchInput = document.getElementById("searchInput");
 
-  if (!gamesContainer) {
-    console.error("gamesContainer not found");
-    return;
-  }
+  if (!gamesContainer) return;
+
+  /* -------------------------
+     Alphabetical sort (A–Z)
+  -------------------------- */
+  const games = Array.from(gamesContainer.querySelectorAll(".game"));
+
+  games
+    .sort((a, b) => {
+      const nameA = a.dataset.name.toLowerCase();
+      const nameB = b.dataset.name.toLowerCase();
+      return nameA.localeCompare(nameB);
+    })
+    .forEach((game) => gamesContainer.appendChild(game));
 
   /* -------------------------
      Click handling (delegated)
   -------------------------- */
   gamesContainer.addEventListener("click", (e) => {
-    const game = e.target.closest(".game");
-    if (!game) return;
+    const card = e.target.closest(".game");
+    if (!card) return;
 
-    const url = game.dataset.url;
+    const url = card.dataset.url;
     if (!url) return;
 
-    console.log("Launching game:", url);
     window.location.href = `play.html?game=${url}`;
   });
 
@@ -34,12 +35,18 @@ document.addEventListener("DOMContentLoaded", () => {
   -------------------------- */
   if (searchInput) {
     searchInput.addEventListener("input", () => {
-      const query = searchInput.value.toLowerCase();
+      const query = searchInput.value.toLowerCase().trim();
 
-      document.querySelectorAll(".game").forEach((game) => {
+      gamesContainer.querySelectorAll(".game").forEach((game) => {
         const name = game.dataset.name.toLowerCase();
         game.hidden = !name.includes(query);
       });
     });
   }
+
+  /* -------------------------
+     Page title
+  -------------------------- */
+  const titleEl = document.getElementById("title");
+  if (titleEl) titleEl.textContent = "voltage.";
 });
