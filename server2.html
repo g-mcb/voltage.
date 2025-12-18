@@ -47,22 +47,42 @@
         overflow-y: auto;
         border-bottom: 1px solid #d0d6e5;
       }
+.message {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 6px;
+}
 
-      .message {
-        margin-bottom: 10px;
-        padding: 10px;
-        border-radius: 6px;
-      }
+.message span {
+  font-size: .85em;
+  color: #555;
+}
 
-      .message p {
-        margin: 0;
-      }
+.message p {
+  margin: 0;
+}
 
-      .message.me {
-        background-color: #002263;
-        color: white;
-        text-align: right;
-      }
+/* ME */
+.message.me {
+  background-color: #002263;
+  color: white;
+  text-align: right;
+}
+
+.message.me span {
+  color: #cfd6ff;
+}
+
+/* OTHERS */
+.message:not(.me) {
+  background-color: #e3e8f5;
+  color: #000;
+}
+
+.message:not(.me) span {
+  color: #000;
+}
+
 
       input {
         padding: 10px;
@@ -146,29 +166,53 @@
       const newMessage = { text: "", username: "" };
 
       const messenger = Vue.extend({
-        template: `
-          <div>
-            <div class="messagesWrapper" id="chat-box">
-              <div v-for="msg in messages" :class="['message', msg.username === newMessage.username ? 'me' : '']">
-                <p><strong>{{ msg.username }}:</strong> {{ msg.text }}</p>
-              </div>
-            </div>
-            <input v-model="newMessage.text" @keyup.enter="addMessage()" placeholder="Type your message...">
-            <button @click="addMessage()">Send</button>
-          </div>
-        `,
-        data() {
-          return { messages: [], newMessage };
-        },
-        created() {
-          // Listen to Firebase messages
-          onChildAdded(messagesRef, snapshot => {
-            this.messages.push(snapshot.val());
-            this.$nextTick(() => {
-              const chatBox = document.getElementById('chat-box');
-              chatBox.scrollTop = chatBox.scrollHeight;
-            });
-          });
+  template: `
+    <div>
+      <div class="messagesWrapper" id="chat-box">
+        <div
+          v-for="msg in messages"
+          :class="['message', msg.username === newMessage.username ? 'me' : '']"
+        >
+          <span>{{ msg.username === newMessage.username ? 'Me' : msg.username }}</span>
+          <p>{{ msg.text }}</p>
+        </div>
+      </div>
+
+      <input
+        v-model="newMessage.text"
+        @keyup.enter="addMessage()"
+        placeholder="Type your message..."
+      >
+      <button @click="addMessage()">Send</button>
+    </div>
+  `,
+  data() {
+    return { messages: [], newMessage };
+  },
+  created() {
+    onChildAdded(messagesRef, snapshot => {
+      this.messages.push(snapshot.val());
+      this.$nextTick(() => {
+        const chatBox = document.getElementById("chat-box");
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+    });
+  },
+  methods: {
+    addMessage() {
+      if (!this.newMessage.text.trim()) return;
+
+      push(messagesRef, {
+        username: this.newMessage.username,
+        text: this.newMessage.text,
+        timestamp: Date.now()
+      });
+
+      this.newMessage.text = "";
+    }
+  }
+});
+
         },
         methods: {
           addMessage() {
