@@ -273,16 +273,21 @@ function sendMessage(prefill=null, skipUserHistory=false){
     });
 }
 
-clearChatBtn.onclick=()=>{
-  if(confirm("This will delete all messages except the original welcome message. Are you sure?")){
-    messageHistory = messageHistory.filter(m=>m.keep);
-    chatBody.innerHTML="";
-    messageHistory.forEach(m=>{
-      appendMessage(m.content,m.role,m.id,m.keep,true);
-    });
+clearChatBtn.onclick = () => {
+  if (confirm("This will delete all messages and restart the chat. Are you sure?")) {
+    // Clear everything
+    messageHistory = [];
+    chatBody.innerHTML = "";
+
+    // Resend the hard-coded welcome message
+    const welcome = "Hi, how can I assist you today? I am voltage. ai, your friendly AI developed by the voltage. team!";
+    appendMessage(welcome, "ai", null, true, true);
+
+    // Save the reset state
     saveToStorage();
   }
 };
+
 
 sendMsg.addEventListener("click",()=>sendMessage());
 aiInput.addEventListener("keypress",e=>{if(e.key==="Enter") sendMessage();});
