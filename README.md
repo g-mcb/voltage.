@@ -1,6 +1,3 @@
-<div align=center> 
-<img title="a title" alt="voltage. screen shot" src="voltagess.png" height="350" /></div>
-
 <h1 align=center> Voltage. Unblocked games site (BETA) </h1>
 
 ### Introduction:
