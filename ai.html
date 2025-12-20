@@ -5,104 +5,60 @@
 <title>voltage. | ai</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Google Fonts: Ubuntu -->
 <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
-
-<!-- Font Awesome / Highlight / Custom CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
 
 <link rel="stylesheet" href="/config/custom.css"/>
 <link rel="stylesheet" href="/config/main.css">
 
 <style>
-body, input, button, .message, .suggestion {
-  font-family: "Ubuntu", sans-serif !important;
-  font-weight: 700;
-}
-.hero h1 { font-weight: 700; }
-
-:root {
-  --blue:#003da5;
-  --blue-dark:#002f82;
-  --white:#fff;
-  --muted:#cdd8ff;
-}
+body,input,button,.message,.suggestion{font-family:"Ubuntu",sans-serif!important;font-weight:700}
+:root{--blue:#003da5;--blue-dark:#002f82;--white:#fff;--muted:#cdd8ff}
 *{margin:0;padding:0;box-sizing:border-box}
-body{
-  background:var(--blue);
-  color:#fff;
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-}
+body{background:var(--blue);color:#fff;height:100vh;display:flex;flex-direction:column}
 .hero{text-align:center;margin-top:60px}
 .hero h1{font-size:64px;font-weight:800}
-.chat-wrapper{
-  flex:1;
-  display:flex;
-  justify-content:center;
-  align-items:flex-end;
-  padding:30px 16px;
-}
-.chat{
-  width:100%;
-  max-width:720px;
-  background:var(--blue-dark);
-  border-radius:14px;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-}
+.chat-wrapper{flex:1;display:flex;justify-content:center;align-items:flex-end;padding:30px 16px}
+.chat{width:100%;max-width:720px;background:var(--blue-dark);border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
 .chat-body{flex:1;padding:16px;overflow-y:auto}
-.message{
-  margin-bottom:12px;
-  line-height:1.5;
-  font-size:15px;
-  padding:6px 12px;
-  border-radius:6px;
-  background:rgba(255,255,255,.05);
-  word-break:break-word;
+.message{margin-bottom:12px;line-height:1.5;font-size:15px;position:relative;padding:6px 12px;border-radius:6px}
+.user-message{text-align:right;background:rgba(255,255,255,.05)}
+.ai-message{background:rgba(255,255,255,.05);color:var(--muted)}
+.edit-btn{
+  position:absolute;top:-22px;right:6px;
+  font-size:13px;cursor:pointer;
+  background:rgba(0,0,0,.35);
+  padding:2px 5px;border-radius:50%;
+  display:none;
 }
-.user-message{text-align:right}
-.ai-message{color:var(--muted)}
-.chat-input{
+.user-message:hover .edit-btn{display:inline}
+
+.ai-buttons{
   display:flex;
-  align-items:center;
-  gap:4px;
-  padding:4px;
-  border-top:1px solid #ffffff22;
-}
-.chat-input input{
-  flex:1;
-  padding:12px 14px;
-  border:none;
-  outline:none;
-  background:transparent;
-  color:#fff;
-}
-.chat-input button{
-  width:40px;
-  height:40px;
-  border:none;
-  background:transparent;
-  color:#fff;
-  cursor:pointer;
-}
-.clear-btn{color:#ff4b4b}
-img{
-  max-width:100%;
-  border-radius:6px;
+  gap:6px;
   margin-top:6px;
 }
-.footer{
-  text-align:center;
+.ai-button{
+  background:#003da5;
+  border:none;
+  color:#fff;
+  padding:4px 6px;
+  border-radius:4px;
   font-size:12px;
-  opacity:.7;
-  padding:10px;
+  cursor:pointer;
 }
+
+.chat-input{display:flex;gap:4px;padding:4px;border-top:1px solid #ffffff22;align-items:center}
+.chat-input input{flex:1;padding:12px;background:transparent;border:none;color:#fff}
+.chat-input button{width:40px;height:40px;background:transparent;border:none;color:#fff;cursor:pointer}
+.clear-btn{color:#ff4b4b}
+
+img{max-width:100%;border-radius:6px;margin-top:6px}
+
+.footer{text-align:center;font-size:12px;opacity:.7;padding:10px}
 </style>
 </head>
+
 <body>
 
 <nav class="navbar">
@@ -112,45 +68,22 @@ img{
   <div class="nav-right">
     <a href="/games.html" class="nav-link"><i class="fa-solid fa-gamepad"></i> Games</a>
     <a href="/ai.html" class="nav-link"><i class="fa-solid fa-robot"></i> AI</a>
-    <div class="nav-dropdown">
-      <span class="nav-link">
-        <i class="fa-solid fa-comments"></i> Chat
-        <i class="fa-solid fa-caret-down"></i>
-      </span>
-      <div class="dropdown-menu">
-        <a href="/server1.html"><i class="fa-solid fa-server"></i> Server 1</a>
-        <a href="/server2.html"><i class="fa-solid fa-server"></i> Server 2</a>
-      </div>
-    </div>
   </div>
 </nav>
 
 <div class="hero"><h1>voltage.</h1></div>
 
 <div class="chat-wrapper">
-  <div class="chat">
-    <div class="chat-body" id="chatBody"></div>
+<div class="chat">
+  <div class="chat-body" id="chatBody"></div>
 
-    <div class="chat-input">
-      <button class="clear-btn" id="clearChatBtn">
-        <i class="fa-solid fa-trash"></i>
-      </button>
-
-      <button id="uploadBtn" title="Upload">
-        <i class="fa-solid fa-paperclip"></i>
-      </button>
-
-      <button id="generateImageBtn" title="Generate Image">
-        <i class="fa-solid fa-image"></i>
-      </button>
-
-      <input id="aiInput" placeholder="Type a message or /imagine prompt…" />
-
-      <button id="sendMsg">
-        <i class="fa-solid fa-arrow-up"></i>
-      </button>
-    </div>
+  <div class="chat-input">
+    <button class="clear-btn" id="clearChatBtn"><i class="fa-solid fa-trash"></i></button>
+    <button class="ai-button" id="uploadBtn"><i class="fa-solid fa-paperclip"></i></button>
+    <input id="aiInput" placeholder="Type a message...">
+    <button id="sendMsg"><i class="fas fa-arrow-up"></i></button>
   </div>
+</div>
 </div>
 
 <div class="footer">
@@ -158,121 +91,118 @@ img{
 </div>
 
 <script>
-const chatBody = document.getElementById("chatBody");
-const aiInput = document.getElementById("aiInput");
-const sendMsg = document.getElementById("sendMsg");
-const clearChatBtn = document.getElementById("clearChatBtn");
-const uploadBtn = document.getElementById("uploadBtn");
-const generateImageBtn = document.getElementById("generateImageBtn");
+const chatBody=document.getElementById("chatBody");
+const aiInput=document.getElementById("aiInput");
+const sendMsg=document.getElementById("sendMsg");
+const clearChatBtn=document.getElementById("clearChatBtn");
+const uploadBtn=document.getElementById("uploadBtn");
 
-// ===== Helpers =====
-function appendText(text, role){
-  const div=document.createElement("div");
-  div.className=`message ${role}-message`;
-  div.textContent=text;
-  chatBody.appendChild(div);
-  chatBody.scrollTop=chatBody.scrollHeight;
+let messageHistory=[];
+
+function saveChat(){
+  localStorage.setItem("voltageChat",JSON.stringify(messageHistory));
 }
 
-function appendImage(url, role){
-  const div=document.createElement("div");
-  div.className=`message ${role}-message`;
-  const img=document.createElement("img");
-  img.src=url;
-  img.loading="lazy";
-  div.appendChild(img);
-  chatBody.appendChild(div);
-  chatBody.scrollTop=chatBody.scrollHeight;
+function loadChat(){
+  const data=localStorage.getItem("voltageChat");
+  if(data){
+    messageHistory=JSON.parse(data);
+    messageHistory.forEach(m=>renderMessage(m,true));
+  }else{
+    addMessage("Hi, how can I assist you today? I am voltage. ai 👋","ai");
+  }
 }
 
-// ===== Send Message =====
-function sendMessage(){
-  const msg=aiInput.value.trim();
-  if(!msg) return;
-  aiInput.value="";
-  appendText(msg,"user");
+function addMessage(content,role){
+  const msg={id:Date.now()+Math.random(),role,content};
+  messageHistory.push(msg);
+  renderMessage(msg);
+  saveChat();
+}
 
-  // /imagine command
-  if(msg.startsWith("/imagine")){
-    const prompt=msg.replace("/imagine","").trim();
-    if(!prompt){
-      appendText("Please provide a prompt.","ai");
-      return;
+function renderMessage(msg){
+  const div=document.createElement("div");
+  div.className=`message ${msg.role}-message`;
+  div.dataset.id=msg.id;
+
+  if(msg.role==="user"){
+    if(msg.content.startsWith("data:image")){
+      const img=document.createElement("img");
+      img.src=msg.content;
+      div.appendChild(img);
+    }else{
+      div.textContent=msg.content;
     }
-    const imgURL=
-      `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${Date.now()}`;
-    appendImage(imgURL,"ai");
-    return;
+
+    const edit=document.createElement("span");
+    edit.className="edit-btn";
+    edit.textContent="✎";
+    edit.onclick=()=>{
+      aiInput.value=msg.content;
+      messageHistory=messageHistory.filter(m=>m.id!==msg.id);
+      div.remove();
+      saveChat();
+    };
+    div.appendChild(edit);
+
+  } else {
+    div.textContent = msg.content;
+
+    const btns=document.createElement("div");
+    btns.className="ai-buttons";
+
+    const copy=document.createElement("button");
+    copy.className="ai-button";
+    copy.innerHTML='<i class="fa-regular fa-copy"></i>';
+    copy.onclick=()=>navigator.clipboard.writeText(msg.content);
+
+    const speak=document.createElement("button");
+    speak.className="ai-button";
+    speak.innerHTML='<i class="fa-solid fa-volume-up"></i>';
+    speak.onclick=()=>{
+      speechSynthesis.cancel();
+      speechSynthesis.speak(new SpeechSynthesisUtterance(msg.content));
+    };
+
+    btns.append(copy,speak);
+    div.appendChild(btns);
   }
 
-  appendText("Thinking...","ai");
-
-  fetch(`https://text.pollinations.ai/${encodeURIComponent(msg)}`)
-    .then(r=>r.text())
-    .then(t=>{
-      chatBody.lastChild.remove();
-      appendText(t,"ai");
-    })
-    .catch(()=>{
-      chatBody.lastChild.remove();
-      appendText("Error contacting AI.","ai");
-    });
+  chatBody.appendChild(div);
+  chatBody.scrollTop=chatBody.scrollHeight;
 }
 
-sendMsg.onclick=sendMessage;
-aiInput.addEventListener("keydown",e=>{
-  if(e.key==="Enter") sendMessage();
-});
+sendMsg.onclick=()=>{
+  if(!aiInput.value.trim())return;
+  addMessage(aiInput.value,"user");
+  aiInput.value="";
+};
 
-// ===== Clear =====
 clearChatBtn.onclick=()=>{
-  if(confirm("Clear chat?")){
+  if(confirm("Clear all chat history?")){
+    localStorage.removeItem("voltageChat");
     chatBody.innerHTML="";
-    appendText(
-      "Hi, how can I assist you today? I am voltage. ai.",
-      "ai"
-    );
+    messageHistory=[];
+    addMessage("Hi, how can I assist you today?");
   }
 };
 
-// ===== File Upload =====
 const fileInput=document.createElement("input");
 fileInput.type="file";
-fileInput.accept="image/*,video/*,audio/*,.txt";
+fileInput.accept="image/*";
 fileInput.style.display="none";
 document.body.appendChild(fileInput);
 
 uploadBtn.onclick=()=>fileInput.click();
-
 fileInput.onchange=()=>{
   const file=fileInput.files[0];
-  if(!file) return;
-
+  if(!file)return;
   const reader=new FileReader();
-  reader.onload=e=>{
-    if(file.type.startsWith("image/")){
-      appendImage(e.target.result,"user");
-
-      const imgURL=
-        `https://image.pollinations.ai/prompt/${encodeURIComponent(file.name)}?seed=${Date.now()}`;
-      appendImage(imgURL,"ai");
-    } else {
-      appendText(`Uploaded file: ${file.name}`,"user");
-    }
-  };
+  reader.onload=e=>addMessage(e.target.result,"user");
   reader.readAsDataURL(file);
 };
 
-// ===== Generate Image Button =====
-generateImageBtn.onclick=()=>{
-  aiInput.value="/imagine ";
-  aiInput.focus();
-};
-
-// Initial message
-appendText(
-  "Hi, how can I assist you today? I am voltage. ai, your friendly AI developed by the voltage. team!"
-);
+loadChat();
 </script>
 
 </body>
