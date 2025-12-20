@@ -124,7 +124,7 @@ pre code { display:block; padding:8px; background:#002766; border-radius:6px; ov
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
 <script>
-// ——— Your Existing JS Logic ———
+// ——— Your JS Logic with Updates ———
 const chatBody = document.getElementById("chatBody");
 const aiInput = document.getElementById("aiInput");
 const sendMsg = document.getElementById("sendMsg");
@@ -154,7 +154,7 @@ function loadSuggestions(){
     btn.onclick=()=>{
       aiInput.value=starter;
       sendMessage();
-      suggestionsContainer.style.display="none";
+      suggestionsContainer.style.display="none"; // Hide after sending
     };
     suggestionsContainer.appendChild(btn);
   });
@@ -250,7 +250,8 @@ function sendMessage(prefill=null, skipUserHistory=false){
     aiInput.value="";
   }
 
-  loadSuggestions();
+  // Hide suggestions after sending
+  suggestionsContainer.style.display = "none";
 
   const thinkingDiv=document.createElement("div");
   thinkingDiv.className="message ai-message";
@@ -260,6 +261,7 @@ function sendMessage(prefill=null, skipUserHistory=false){
 
   const prompt = messageHistory.slice(-10).map(m=>`${m.role}: ${m.content}`).join("\n");
 
+  // Pollinations AI fetch
   fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}`)
     .then(res=>res.text())
     .then(data=>{
@@ -273,33 +275,79 @@ function sendMessage(prefill=null, skipUserHistory=false){
     });
 }
 
+// Clear chat button
 clearChatBtn.onclick = () => {
   if (confirm("This will delete all messages and restart the chat. Are you sure?")) {
-    // Clear everything
     messageHistory = [];
     chatBody.innerHTML = "";
 
-    // Resend the hard-coded welcome message
+    // Show suggestions again after clearing
+    loadSuggestions();
+
     const welcome = "Hi, how can I assist you today? I am voltage. ai, your friendly AI developed by the voltage. team!";
     appendMessage(welcome, "ai", null, true, true);
 
-    // Save the reset state
     saveToStorage();
   }
 };
 
-
+// Send message on button click or Enter key
 sendMsg.addEventListener("click",()=>sendMessage());
 aiInput.addEventListener("keypress",e=>{if(e.key==="Enter") sendMessage();});
 
+// On page load
 window.addEventListener("DOMContentLoaded",()=>{
   loadFromStorage();
-  loadSuggestions();
   if(messageHistory.length===0){
     const welcome="Hi, how can I assist you today? I am voltage. ai, your friendly AI developed by the voltage. team!";
     appendMessage(welcome,"ai",null,true,true);
+    loadSuggestions();
   }
 });
+
+// ===== Add file input =====
+const fileInput = document.createElement("input");
+fileInput.type = "file";
+fileInput.accept = "image/*,video/*,audio/*,.txt";
+fileInput.style.display = "none";
+fileInput.onchange = () => {
+  const file = fileInput.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    appendMessage(`Uploaded file: ${file.name}`, "user");
+    // Optional: send to Pollinations AI for processing if image
+    if(file.type.startsWith("image/")){
+      const thinkingDiv=document.createElement("div");
+      thinkingDiv.className="message ai-message";
+      thinkingDiv.textContent="Generating image...";
+      chatBody.appendChild(thinkingDiv);
+      chatBody.scrollTop=chatBody.scrollHeight;
+
+      fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(file.name)}`)
+        .then(res=>res.text())
+        .then(data=>{
+          thinkingDiv.remove();
+          appendMessage(`![Generated Image](${data})`, "ai", null, true);
+        })
+        .catch(err=>{
+          thinkingDiv.remove();
+          appendMessage("Error generating image.","ai",null,true);
+        });
+    }
+  };
+  reader.readAsDataURL(file);
+};
+document.body.appendChild(fileInput);
+
+// Optional button to trigger file upload
+const uploadBtn = document.createElement("button");
+uploadBtn.textContent = "📎";
+uploadBtn.className = "ai-button";
+uploadBtn.style.marginLeft = "4px";
+uploadBtn.onclick = ()=>fileInput.click();
+document.querySelector(".chat-input").appendChild(uploadBtn);
 </script>
 
 </body>
