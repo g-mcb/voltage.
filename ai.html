@@ -341,12 +341,12 @@ fileInput.onchange = () => {
 };
 document.body.appendChild(fileInput);
 
-// Optional button to trigger file upload
+// Optional button to trigger file upload with Font Awesome paperclip
 const uploadBtn = document.createElement("button");
-uploadBtn.textContent = "📎";
 uploadBtn.className = "ai-button";
 uploadBtn.style.marginLeft = "4px";
-uploadBtn.onclick = ()=>fileInput.click();
+uploadBtn.innerHTML = '<i class="fa-solid fa-paperclip" style="color: #ffffff;"></i>';
+uploadBtn.onclick = () => fileInput.click();
 document.querySelector(".chat-input").appendChild(uploadBtn);
 </script>
 
