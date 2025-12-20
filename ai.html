@@ -8,6 +8,10 @@
 <!-- Google Fonts: Ubuntu -->
 <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
 
+<!-- Font Awesome / Highlight / Custom CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
+
 <style>
 body, input, button, .message, .suggestion {
   font-family: "Ubuntu", sans-serif !important;
@@ -29,7 +33,7 @@ body { background:var(--blue); color:var(--white); height:100vh; display:flex; f
 .chat-wrapper { flex:1; display:flex; justify-content:center; align-items:flex-end; padding:30px 16px; }
 .chat { width:100%; max-width:720px; background:var(--blue-dark); border-radius:14px; display:flex; flex-direction:column; overflow:hidden; }
 .chat-body { flex:1; padding:16px; overflow-y:auto; }
-.message { margin-bottom:12px; line-height:1.5; font-size:15px; position:relative; padding:6px 12px; border-radius:6px; }
+.message { margin-bottom:12px; line-height:1.5; font-size:15px; position:relative; padding:6px 12px; border-radius:6px; word-break:break-word; }
 .user-message { text-align:right; color:var(--white); background:rgba(255,255,255,0.05); }
 .user-message .edit-btn { 
   position:absolute; top:-22px; right:4px; font-size:14px; cursor:pointer;
@@ -38,10 +42,37 @@ body { background:var(--blue); color:var(--white); height:100vh; display:flex; f
 }
 .user-message:hover .edit-btn { display:inline-block; }
 .ai-message { color:var(--muted); background:rgba(255,255,255,0.05); }
-.chat-input { display:flex; border-top:1px solid #ffffff22; }
-.chat-input input { flex:1; padding:14px; border:none; outline:none; background:transparent; color:var(--white); font-size:15px; }
-.chat-input button { width:50px; border:none; background:transparent; color:#fff; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; }
-.clear-btn { width:50px; border:none; background:transparent; color:#ff4b4b; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; }
+.chat-input {
+  display:flex;
+  border-top:1px solid #ffffff22;
+  align-items:center;
+  gap:4px;
+  padding:4px;
+}
+.chat-input input {
+  flex:1;
+  padding:12px 14px;
+  border:none;
+  outline:none;
+  background:transparent;
+  color:var(--white);
+  font-size:15px;
+  border-radius:6px;
+}
+.chat-input button {
+  flex:0 0 40px;
+  height:40px;
+  border:none;
+  background:transparent;
+  color:#fff;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  border-radius:6px;
+}
+.clear-btn { color:#ff4b4b; }
 .footer { text-align:center; font-size:12px; opacity:0.7; padding:10px; }
 .suggestions { display:flex; flex-wrap:wrap; gap:6px; padding:8px 16px; background:#002f82; }
 .suggestion { padding:6px 10px; background:#003da5; border-radius:6px; cursor:pointer; font-size:13px; }
@@ -50,6 +81,7 @@ pre code { display:block; padding:8px; background:#002766; border-radius:6px; ov
 .ai-buttons { display:flex; gap:6px; margin-top:4px; flex-wrap:wrap; }
 .ai-button { padding:4px 6px; background:#003da5; border:none; color:#fff; cursor:pointer; border-radius:4px; font-size:12px; }
 .ai-button.active { background:#cdd8ff; color:#000; }
+img { max-width:100%; border-radius:6px; margin-top:6px; }
 </style>
 </head>
 <body>
@@ -79,14 +111,8 @@ pre code { display:block; padding:8px; background:#002766; border-radius:6px; ov
     <div class="suggestions" id="suggestionsContainer"></div>
     <div class="chat-input">
       <button class="clear-btn" id="clearChatBtn"><i class="fa-solid fa-trash"></i></button>
-      <!-- Paperclip -->
-      <button class="ai-button" id="uploadBtn" title="Upload File">
-        <i class="fa-solid fa-paperclip" style="color:#ffffff;"></i>
-      </button>
-      <!-- Image Generation -->
-      <button class="ai-button" id="generateImageBtn" title="Generate Image">
-        <i class="fa-solid fa-image" style="color:#ffffff;"></i>
-      </button>
+      <button class="ai-button" id="uploadBtn" title="Upload File"><i class="fa-solid fa-paperclip"></i></button>
+      <button class="ai-button" id="generateImageBtn" title="Generate Image"><i class="fa-solid fa-image"></i></button>
       <input id="aiInput" placeholder="Type a message..."/>
       <button id="sendMsg"><i class="fas fa-arrow-up"></i></button>
     </div>
@@ -107,7 +133,6 @@ const suggestionsContainer = document.getElementById("suggestionsContainer");
 const clearChatBtn = document.getElementById("clearChatBtn");
 const uploadBtn = document.getElementById("uploadBtn");
 const generateImageBtn = document.getElementById("generateImageBtn");
-
 let messageHistory = [];
 
 function generateId(){ return 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2,5); }
@@ -159,7 +184,15 @@ function appendMessage(message,type,userId=null,keep=false,skipHistory=false){
   if(type==="user"){
     const id = userId || generateId();
     div.dataset.userId=id;
-    div.textContent=message;
+
+    // User images
+    if(typeof message === "string" && message.startsWith("data:image/")){
+      const img = document.createElement("img");
+      img.src = message;
+      div.appendChild(img);
+    } else {
+      div.textContent = message;
+    }
 
     const editBtn=document.createElement("span");
     editBtn.textContent="✎";
@@ -181,8 +214,16 @@ function appendMessage(message,type,userId=null,keep=false,skipHistory=false){
 
   } else {
     div.dataset.userId=userId;
-    div.innerHTML = marked.parse(message);
-    div.querySelectorAll("pre code").forEach(block=>hljs.highlightElement(block));
+
+    // AI images
+    if(message.startsWith("http") && (message.match(/\.(jpeg|jpg|gif|png|webp)$/i) || message.includes("image.pollinations.ai"))){
+      const img = document.createElement("img");
+      img.src = message;
+      div.appendChild(img);
+    } else {
+      div.innerHTML = marked.parse(message);
+      div.querySelectorAll("pre code").forEach(block=>hljs.highlightElement(block));
+    }
 
     const btnContainer=document.createElement("div");
     btnContainer.className="ai-buttons";
@@ -240,7 +281,7 @@ function sendMessage(prefill=null, skipUserHistory=false){
     .then(res=>res.text())
     .then(data=>{
       thinkingDiv.remove();
-      appendMessage(data || "No response from Pollinations AI.","ai",null,true);
+      appendMessage(data || "No response from Pollinations AI.","ai");
     })
     .catch(err=>{
       thinkingDiv.remove();
@@ -254,23 +295,13 @@ clearChatBtn.onclick = () => {
     messageHistory = [];
     chatBody.innerHTML = "";
     loadSuggestions();
-    const welcome = "Hi, how can I assist you today? I am voltage. ai, your friendly AI developed by the voltage. team!";
-    appendMessage(welcome, "ai", null, true, true);
+    appendMessage("Hi, how can I assist you today? I am voltage. ai, your friendly AI developed by the voltage. team!","ai",null,true,true);
     saveToStorage();
   }
 };
 
 sendMsg.addEventListener("click",()=>sendMessage());
 aiInput.addEventListener("keypress",e=>{if(e.key==="Enter") sendMessage();});
-
-window.addEventListener("DOMContentLoaded",()=>{
-  loadFromStorage();
-  if(messageHistory.length===0){
-    const welcome="Hi, how can I assist you today? I am voltage. ai, your friendly AI developed by the voltage. team!";
-    appendMessage(welcome,"ai",null,true,true);
-    loadSuggestions();
-  }
-});
 
 // ===== File Upload =====
 const fileInput = document.createElement("input");
@@ -281,32 +312,38 @@ fileInput.onchange = () => {
   const file = fileInput.files[0];
   if(!file) return;
 
-  appendMessage(`Uploaded file: ${file.name}`, "user");
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    if(file.type.startsWith("image/")){
+      appendMessage(e.target.result,"user");
+      // Auto-generate AI image for uploaded images
+      const thinkingDiv=document.createElement("div");
+      thinkingDiv.className="message ai-message";
+      thinkingDiv.textContent="Generating image...";
+      chatBody.appendChild(thinkingDiv);
+      chatBody.scrollTop=chatBody.scrollHeight;
 
-  if(file.type.startsWith("image/")){
-    const thinkingDiv=document.createElement("div");
-    thinkingDiv.className="message ai-message";
-    thinkingDiv.textContent="Generating image...";
-    chatBody.appendChild(thinkingDiv);
-    chatBody.scrollTop=chatBody.scrollHeight;
-
-    fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(file.name)}`)
-      .then(res=>res.text())
-      .then(data=>{
-        thinkingDiv.remove();
-        appendMessage(`![Generated Image](${data})`, "ai", null, true);
-      })
-      .catch(err=>{
-        thinkingDiv.remove();
-        appendMessage("Error generating image.","ai",null,true);
-      });
-  }
+      fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(file.name)}`)
+        .then(res=>res.text())
+        .then(data=>{
+          thinkingDiv.remove();
+          appendMessage(data,"ai");
+        })
+        .catch(err=>{
+          thinkingDiv.remove();
+          appendMessage("Error generating image.","ai",null,true);
+        });
+    } else {
+      appendMessage(`Uploaded file: ${file.name}`, "user");
+    }
+  };
+  reader.readAsDataURL(file);
 };
 document.body.appendChild(fileInput);
 uploadBtn.onclick = ()=>fileInput.click();
 
-// ===== Generate Image Button =====
-generateImageBtn.onclick = () => {
+// ===== Generate Image Button (/imagine) =====
+generateImageBtn.onclick = ()=>{
   aiInput.value = "/imagine ";
   aiInput.focus();
 };
