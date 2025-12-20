@@ -11,21 +11,9 @@
 <style>
 body, input, button, .message, .suggestion {
   font-family: "Ubuntu", sans-serif !important;
-  font-weight: 700; /* Use bold weight for headings/messages */
-}
-.hero h1 {
   font-weight: 700;
 }
-</style>
-
-
-<!-- Font Awesome / Highlight / Custom CSS -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
-<link rel="stylesheet" href="/config/custom.css">
-<link rel="stylesheet" href="/config/main.css">
-
-<style>
+.hero h1 { font-weight: 700; }
 
 /* ==== Layout & Colors ==== */
 :root {
@@ -52,7 +40,7 @@ body { background:var(--blue); color:var(--white); height:100vh; display:flex; f
 .ai-message { color:var(--muted); background:rgba(255,255,255,0.05); }
 .chat-input { display:flex; border-top:1px solid #ffffff22; }
 .chat-input input { flex:1; padding:14px; border:none; outline:none; background:transparent; color:var(--white); font-size:15px; }
-.chat-input button { width:50px; border:none; background:transparent; color:#fff; cursor:pointer; font-size:16px; }
+.chat-input button { width:50px; border:none; background:transparent; color:#fff; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; }
 .clear-btn { width:50px; border:none; background:transparent; color:#ff4b4b; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; }
 .footer { text-align:center; font-size:12px; opacity:0.7; padding:10px; }
 .suggestions { display:flex; flex-wrap:wrap; gap:6px; padding:8px 16px; background:#002f82; }
@@ -66,42 +54,22 @@ pre code { display:block; padding:8px; background:#002766; border-radius:6px; ov
 </head>
 <body>
 
-  <!-- NAVBAR -->
-    <nav class="navbar">
-      <div class="nav-left">
-        <a href="/" class="nav-logo">
-          <i class="fa-solid fa-bolt"></i> voltage.
-        </a>
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="/" class="nav-logo"><i class="fa-solid fa-bolt"></i> voltage.</a>
+  </div>
+  <div class="nav-right">
+    <a href="/games.html" class="nav-link"><i class="fa-solid fa-gamepad"></i> Games</a>
+    <a href="/ai.html" class="nav-link"><i class="fa-solid fa-robot"></i> AI</a>
+    <div class="nav-dropdown">
+      <span class="nav-link"><i class="fa-solid fa-comments"></i> Chat <i class="fa-solid fa-caret-down"></i></span>
+      <div class="dropdown-menu">
+        <a href="/server1.html"><i class="fa-solid fa-server"></i> Server 1 (Recommended)</a>
+        <a href="/server2.html"><i class="fa-solid fa-server"></i> Server 2</a>
       </div>
-
-      <div class="nav-right">
-        <a href="/games.html" class="nav-link">
-          <i class="fa-solid fa-gamepad"></i> Games
-        </a>
-
-        <div class="nav-right">
-    <a href="/ai.html" class="nav-link">
-      <i class="fa-solid fa-robot"></i> AI
-    </a>
-
-        <div class="nav-dropdown">
-          <span class="nav-link">
-            <i class="fa-solid fa-comments"></i> Chat
-            <i class="fa-solid fa-caret-down"></i>
-          </span>
-          <div class="dropdown-menu">
-            <a href="/server1.html">
-              <i class="fa-solid fa-server"></i> Server 1 (Recommended)
-            </a>
-            <a href="/server2.html">
-              <i class="fa-solid fa-server"></i> Server 2
-            </a>
-          </div>
-        </div>
-        </div>
-      </div>
-    </nav>
-
+    </div>
+  </div>
+</nav>
 
 <div class="hero"><h1>voltage.</h1></div>
 
@@ -111,6 +79,14 @@ pre code { display:block; padding:8px; background:#002766; border-radius:6px; ov
     <div class="suggestions" id="suggestionsContainer"></div>
     <div class="chat-input">
       <button class="clear-btn" id="clearChatBtn"><i class="fa-solid fa-trash"></i></button>
+      <!-- Paperclip -->
+      <button class="ai-button" id="uploadBtn" title="Upload File">
+        <i class="fa-solid fa-paperclip" style="color:#ffffff;"></i>
+      </button>
+      <!-- Image Generation -->
+      <button class="ai-button" id="generateImageBtn" title="Generate Image">
+        <i class="fa-solid fa-image" style="color:#ffffff;"></i>
+      </button>
       <input id="aiInput" placeholder="Type a message..."/>
       <button id="sendMsg"><i class="fas fa-arrow-up"></i></button>
     </div>
@@ -124,18 +100,18 @@ pre code { display:block; padding:8px; background:#002766; border-radius:6px; ov
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
 <script>
-// ——— Your JS Logic with Updates ———
 const chatBody = document.getElementById("chatBody");
 const aiInput = document.getElementById("aiInput");
 const sendMsg = document.getElementById("sendMsg");
 const suggestionsContainer = document.getElementById("suggestionsContainer");
 const clearChatBtn = document.getElementById("clearChatBtn");
+const uploadBtn = document.getElementById("uploadBtn");
+const generateImageBtn = document.getElementById("generateImageBtn");
+
 let messageHistory = [];
 
-// Unique ID generator
 function generateId(){ return 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2,5); }
 
-// Conversation starters
 const convoStarters=[
   "How do I learn to code efficiently?",
   "Tell me a funny joke!",
@@ -154,7 +130,7 @@ function loadSuggestions(){
     btn.onclick=()=>{
       aiInput.value=starter;
       sendMessage();
-      suggestionsContainer.style.display="none"; // Hide after sending
+      suggestionsContainer.style.display="none";
     };
     suggestionsContainer.appendChild(btn);
   });
@@ -226,7 +202,7 @@ function appendMessage(message,type,userId=null,keep=false,skipHistory=false){
     const regenBtn=document.createElement("button");
     regenBtn.className="ai-button";
     regenBtn.innerHTML='<i class="fa-solid fa-arrows-rotate"></i>';
-    regenBtn.onclick=()=>{ alert("Sorry, redo isn't working currently. We will fix this in a future update."); };
+    regenBtn.onclick=()=>{ alert("Redo not available."); };
     btnContainer.appendChild(regenBtn);
 
     div.appendChild(btnContainer);
@@ -250,7 +226,6 @@ function sendMessage(prefill=null, skipUserHistory=false){
     aiInput.value="";
   }
 
-  // Hide suggestions after sending
   suggestionsContainer.style.display = "none";
 
   const thinkingDiv=document.createElement("div");
@@ -261,7 +236,6 @@ function sendMessage(prefill=null, skipUserHistory=false){
 
   const prompt = messageHistory.slice(-10).map(m=>`${m.role}: ${m.content}`).join("\n");
 
-  // Pollinations AI fetch
   fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}`)
     .then(res=>res.text())
     .then(data=>{
@@ -275,27 +249,20 @@ function sendMessage(prefill=null, skipUserHistory=false){
     });
 }
 
-// Clear chat button
 clearChatBtn.onclick = () => {
   if (confirm("This will delete all messages and restart the chat. Are you sure?")) {
     messageHistory = [];
     chatBody.innerHTML = "";
-
-    // Show suggestions again after clearing
     loadSuggestions();
-
     const welcome = "Hi, how can I assist you today? I am voltage. ai, your friendly AI developed by the voltage. team!";
     appendMessage(welcome, "ai", null, true, true);
-
     saveToStorage();
   }
 };
 
-// Send message on button click or Enter key
 sendMsg.addEventListener("click",()=>sendMessage());
 aiInput.addEventListener("keypress",e=>{if(e.key==="Enter") sendMessage();});
 
-// On page load
 window.addEventListener("DOMContentLoaded",()=>{
   loadFromStorage();
   if(messageHistory.length===0){
@@ -305,7 +272,7 @@ window.addEventListener("DOMContentLoaded",()=>{
   }
 });
 
-// ===== Add file input =====
+// ===== File Upload =====
 const fileInput = document.createElement("input");
 fileInput.type = "file";
 fileInput.accept = "image/*,video/*,audio/*,.txt";
@@ -314,40 +281,35 @@ fileInput.onchange = () => {
   const file = fileInput.files[0];
   if(!file) return;
 
-  const reader = new FileReader();
-  reader.onload = (e)=>{
-    appendMessage(`Uploaded file: ${file.name}`, "user");
-    // Optional: send to Pollinations AI for processing if image
-    if(file.type.startsWith("image/")){
-      const thinkingDiv=document.createElement("div");
-      thinkingDiv.className="message ai-message";
-      thinkingDiv.textContent="Generating image...";
-      chatBody.appendChild(thinkingDiv);
-      chatBody.scrollTop=chatBody.scrollHeight;
+  appendMessage(`Uploaded file: ${file.name}`, "user");
 
-      fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(file.name)}`)
-        .then(res=>res.text())
-        .then(data=>{
-          thinkingDiv.remove();
-          appendMessage(`![Generated Image](${data})`, "ai", null, true);
-        })
-        .catch(err=>{
-          thinkingDiv.remove();
-          appendMessage("Error generating image.","ai",null,true);
-        });
-    }
-  };
-  reader.readAsDataURL(file);
+  if(file.type.startsWith("image/")){
+    const thinkingDiv=document.createElement("div");
+    thinkingDiv.className="message ai-message";
+    thinkingDiv.textContent="Generating image...";
+    chatBody.appendChild(thinkingDiv);
+    chatBody.scrollTop=chatBody.scrollHeight;
+
+    fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(file.name)}`)
+      .then(res=>res.text())
+      .then(data=>{
+        thinkingDiv.remove();
+        appendMessage(`![Generated Image](${data})`, "ai", null, true);
+      })
+      .catch(err=>{
+        thinkingDiv.remove();
+        appendMessage("Error generating image.","ai",null,true);
+      });
+  }
 };
 document.body.appendChild(fileInput);
+uploadBtn.onclick = ()=>fileInput.click();
 
-// Optional button to trigger file upload with Font Awesome paperclip
-const uploadBtn = document.createElement("button");
-uploadBtn.className = "ai-button";
-uploadBtn.style.marginLeft = "4px";
-uploadBtn.innerHTML = '<i class="fa-solid fa-paperclip" style="color: #ffffff;"></i>';
-uploadBtn.onclick = () => fileInput.click();
-document.querySelector(".chat-input").appendChild(uploadBtn);
+// ===== Generate Image Button =====
+generateImageBtn.onclick = () => {
+  aiInput.value = "/imagine ";
+  aiInput.focus();
+};
 </script>
 
 </body>
