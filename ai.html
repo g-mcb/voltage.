@@ -21,9 +21,10 @@ body{background:var(--blue);color:#fff;height:100vh;display:flex;flex-direction:
 .chat-wrapper{flex:1;display:flex;justify-content:center;align-items:flex-end;padding:30px 16px}
 .chat{width:100%;max-width:720px;background:var(--blue-dark);border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
 .chat-body{flex:1;padding:16px;overflow-y:auto}
-.message{margin-bottom:12px;line-height:1.5;font-size:15px;position:relative;padding:6px 12px;border-radius:6px}
+.message{margin-bottom:12px;line-height:1.5;font-size:15px;position:relative;padding:6px 12px;border-radius:6px;word-break:break-word}
 .user-message{text-align:right;background:rgba(255,255,255,.05)}
 .ai-message{background:rgba(255,255,255,.05);color:var(--muted)}
+
 .edit-btn{
   position:absolute;top:-22px;right:6px;
   font-size:13px;cursor:pointer;
@@ -33,11 +34,7 @@ body{background:var(--blue);color:#fff;height:100vh;display:flex;flex-direction:
 }
 .user-message:hover .edit-btn{display:inline}
 
-.ai-buttons{
-  display:flex;
-  gap:6px;
-  margin-top:6px;
-}
+.ai-buttons{display:flex;gap:6px;margin-top:6px}
 .ai-button{
   background:#003da5;
   border:none;
@@ -48,9 +45,20 @@ body{background:var(--blue);color:#fff;height:100vh;display:flex;flex-direction:
   cursor:pointer;
 }
 
-.chat-input{display:flex;gap:4px;padding:4px;border-top:1px solid #ffffff22;align-items:center}
-.chat-input input{flex:1;padding:12px;background:transparent;border:none;color:#fff}
-.chat-input button{width:40px;height:40px;background:transparent;border:none;color:#fff;cursor:pointer}
+.chat-input{
+  display:flex;gap:4px;padding:4px;
+  border-top:1px solid #ffffff22;
+  align-items:center
+}
+.chat-input input{
+  flex:1;padding:12px;background:transparent;
+  border:none;color:#fff;font-size:15px
+}
+.chat-input button{
+  width:40px;height:40px;
+  background:transparent;border:none;
+  color:#fff;cursor:pointer
+}
 .clear-btn{color:#ff4b4b}
 
 img{max-width:100%;border-radius:6px;margin-top:6px}
@@ -80,6 +88,7 @@ img{max-width:100%;border-radius:6px;margin-top:6px}
   <div class="chat-input">
     <button class="clear-btn" id="clearChatBtn"><i class="fa-solid fa-trash"></i></button>
     <button class="ai-button" id="uploadBtn"><i class="fa-solid fa-paperclip"></i></button>
+    <button class="ai-button" id="generateImageBtn"><i class="fa-solid fa-image"></i></button>
     <input id="aiInput" placeholder="Type a message...">
     <button id="sendMsg"><i class="fas fa-arrow-up"></i></button>
   </div>
@@ -96,13 +105,14 @@ const aiInput=document.getElementById("aiInput");
 const sendMsg=document.getElementById("sendMsg");
 const clearChatBtn=document.getElementById("clearChatBtn");
 const uploadBtn=document.getElementById("uploadBtn");
+const generateImageBtn=document.getElementById("generateImageBtn");
 
 let messageHistory=[];
 
+/* ===== Storage ===== */
 function saveChat(){
   localStorage.setItem("voltageChat",JSON.stringify(messageHistory));
 }
-
 function loadChat(){
   const data=localStorage.getItem("voltageChat");
   if(data){
@@ -113,6 +123,7 @@ function loadChat(){
   }
 }
 
+/* ===== Message Handling ===== */
 function addMessage(content,role){
   const msg={id:Date.now()+Math.random(),role,content};
   messageHistory.push(msg);
@@ -145,8 +156,14 @@ function renderMessage(msg){
     };
     div.appendChild(edit);
 
-  } else {
-    div.textContent = msg.content;
+  }else{
+    if(msg.content.startsWith("IMAGE::")){
+      const img=document.createElement("img");
+      img.src=msg.content.replace("IMAGE::","");
+      div.appendChild(img);
+    }else{
+      div.textContent=msg.content;
+    }
 
     const btns=document.createElement("div");
     btns.className="ai-buttons";
@@ -154,14 +171,16 @@ function renderMessage(msg){
     const copy=document.createElement("button");
     copy.className="ai-button";
     copy.innerHTML='<i class="fa-regular fa-copy"></i>';
-    copy.onclick=()=>navigator.clipboard.writeText(msg.content);
+    copy.onclick=()=>navigator.clipboard.writeText(msg.content.replace("IMAGE::",""));
 
     const speak=document.createElement("button");
     speak.className="ai-button";
     speak.innerHTML='<i class="fa-solid fa-volume-up"></i>';
     speak.onclick=()=>{
       speechSynthesis.cancel();
-      speechSynthesis.speak(new SpeechSynthesisUtterance(msg.content));
+      speechSynthesis.speak(
+        new SpeechSynthesisUtterance(msg.content.replace("IMAGE::",""))
+      );
     };
 
     btns.append(copy,speak);
@@ -172,21 +191,42 @@ function renderMessage(msg){
   chatBody.scrollTop=chatBody.scrollHeight;
 }
 
-sendMsg.onclick=()=>{
-  if(!aiInput.value.trim())return;
-  addMessage(aiInput.value,"user");
-  aiInput.value="";
-};
+/* ===== Send ===== */
+sendMsg.onclick=sendMessage;
+aiInput.addEventListener("keypress",e=>{if(e.key==="Enter")sendMessage()});
 
+function sendMessage(){
+  const text=aiInput.value.trim();
+  if(!text)return;
+  addMessage(text,"user");
+  aiInput.value="";
+
+  // IMAGE COMMAND
+  if(text.startsWith("/imagine")){
+    const prompt=text.replace("/imagine","").trim() || "abstract art";
+    const imgURL=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${Date.now()}`;
+    addMessage("IMAGE::"+imgURL,"ai");
+    return;
+  }
+
+  // TEXT AI
+  fetch(`https://text.pollinations.ai/${encodeURIComponent(text)}`)
+    .then(r=>r.text())
+    .then(t=>addMessage(t || "No response.","ai"))
+    .catch(()=>addMessage("Error contacting AI.","ai"));
+}
+
+/* ===== Clear ===== */
 clearChatBtn.onclick=()=>{
   if(confirm("Clear all chat history?")){
     localStorage.removeItem("voltageChat");
     chatBody.innerHTML="";
     messageHistory=[];
-    addMessage("Hi, how can I assist you today?");
+    addMessage("Hi, how can I assist you today?","ai");
   }
 };
 
+/* ===== Upload ===== */
 const fileInput=document.createElement("input");
 fileInput.type="file";
 fileInput.accept="image/*";
@@ -200,6 +240,12 @@ fileInput.onchange=()=>{
   const reader=new FileReader();
   reader.onload=e=>addMessage(e.target.result,"user");
   reader.readAsDataURL(file);
+};
+
+/* ===== Image Button ===== */
+generateImageBtn.onclick=()=>{
+  aiInput.value="/imagine ";
+  aiInput.focus();
 };
 
 loadChat();
