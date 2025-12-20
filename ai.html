@@ -5,29 +5,36 @@
 <title>voltage. | ai</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Fonts & Icons -->
-<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700;800&display=swap" rel="stylesheet">
+<!-- Google Fonts: Ubuntu -->
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+
+<!-- Font Awesome / Highlight / Custom CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
+
 <link rel="stylesheet" href="/config/custom.css"/>
 <link rel="stylesheet" href="/config/main.css">
 
-  
 <style>
+body, input, button, .message, .suggestion {
+  font-family: "Ubuntu", sans-serif !important;
+  font-weight: 700;
+}
+.hero h1 { font-weight: 700; }
+
 :root {
   --blue:#003da5;
   --blue-dark:#002f82;
   --white:#fff;
   --muted:#cdd8ff;
 }
-*{box-sizing:border-box;margin:0;padding:0}
+*{margin:0;padding:0;box-sizing:border-box}
 body{
   background:var(--blue);
   color:#fff;
   height:100vh;
   display:flex;
   flex-direction:column;
-  font-family:Ubuntu,sans-serif;
 }
 .hero{text-align:center;margin-top:60px}
 .hero h1{font-size:64px;font-weight:800}
@@ -47,18 +54,15 @@ body{
   flex-direction:column;
   overflow:hidden;
 }
-.chat-body{
-  flex:1;
-  padding:16px;
-  overflow-y:auto;
-}
+.chat-body{flex:1;padding:16px;overflow-y:auto}
 .message{
   margin-bottom:12px;
-  padding:8px 12px;
-  border-radius:6px;
   line-height:1.5;
   font-size:15px;
+  padding:6px 12px;
+  border-radius:6px;
   background:rgba(255,255,255,.05);
+  word-break:break-word;
 }
 .user-message{text-align:right}
 .ai-message{color:var(--muted)}
@@ -66,12 +70,12 @@ body{
   display:flex;
   align-items:center;
   gap:4px;
-  padding:6px;
+  padding:4px;
   border-top:1px solid #ffffff22;
 }
 .chat-input input{
   flex:1;
-  padding:12px;
+  padding:12px 14px;
   border:none;
   outline:none;
   background:transparent;
@@ -88,7 +92,7 @@ body{
 .clear-btn{color:#ff4b4b}
 img{
   max-width:100%;
-  border-radius:8px;
+  border-radius:6px;
   margin-top:6px;
 }
 .footer{
@@ -100,6 +104,26 @@ img{
 </style>
 </head>
 <body>
+
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="/" class="nav-logo"><i class="fa-solid fa-bolt"></i> voltage.</a>
+  </div>
+  <div class="nav-right">
+    <a href="/games.html" class="nav-link"><i class="fa-solid fa-gamepad"></i> Games</a>
+    <a href="/ai.html" class="nav-link"><i class="fa-solid fa-robot"></i> AI</a>
+    <div class="nav-dropdown">
+      <span class="nav-link">
+        <i class="fa-solid fa-comments"></i> Chat
+        <i class="fa-solid fa-caret-down"></i>
+      </span>
+      <div class="dropdown-menu">
+        <a href="/server1.html"><i class="fa-solid fa-server"></i> Server 1</a>
+        <a href="/server2.html"><i class="fa-solid fa-server"></i> Server 2</a>
+      </div>
+    </div>
+  </div>
+</nav>
 
 <div class="hero"><h1>voltage.</h1></div>
 
@@ -116,7 +140,11 @@ img{
         <i class="fa-solid fa-paperclip"></i>
       </button>
 
-      <input id="aiInput" placeholder="Type a message or /imagine something..." />
+      <button id="generateImageBtn" title="Generate Image">
+        <i class="fa-solid fa-image"></i>
+      </button>
+
+      <input id="aiInput" placeholder="Type a message or /imagine prompt…" />
 
       <button id="sendMsg">
         <i class="fa-solid fa-arrow-up"></i>
@@ -135,47 +163,48 @@ const aiInput = document.getElementById("aiInput");
 const sendMsg = document.getElementById("sendMsg");
 const clearChatBtn = document.getElementById("clearChatBtn");
 const uploadBtn = document.getElementById("uploadBtn");
+const generateImageBtn = document.getElementById("generateImageBtn");
 
-function appendText(msg, role){
+// ===== Helpers =====
+function appendText(text, role){
   const div=document.createElement("div");
   div.className=`message ${role}-message`;
-  div.textContent=msg;
+  div.textContent=text;
   chatBody.appendChild(div);
   chatBody.scrollTop=chatBody.scrollHeight;
 }
 
-function appendImage(src, role){
+function appendImage(url, role){
   const div=document.createElement("div");
   div.className=`message ${role}-message`;
   const img=document.createElement("img");
-  img.src=src;
+  img.src=url;
+  img.loading="lazy";
   div.appendChild(img);
   chatBody.appendChild(div);
   chatBody.scrollTop=chatBody.scrollHeight;
 }
 
+// ===== Send Message =====
 function sendMessage(){
   const msg=aiInput.value.trim();
   if(!msg) return;
   aiInput.value="";
   appendText(msg,"user");
 
-  // ===== /imagine COMMAND =====
+  // /imagine command
   if(msg.startsWith("/imagine")){
-    const prompt = msg.replace("/imagine","").trim();
+    const prompt=msg.replace("/imagine","").trim();
     if(!prompt){
-      appendText("Please provide an image prompt.","ai");
+      appendText("Please provide a prompt.","ai");
       return;
     }
-
-    const imgUrl =
+    const imgURL=
       `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${Date.now()}`;
-
-    appendImage(imgUrl,"ai");
+    appendImage(imgURL,"ai");
     return;
   }
 
-  // ===== NORMAL AI TEXT =====
   appendText("Thinking...","ai");
 
   fetch(`https://text.pollinations.ai/${encodeURIComponent(msg)}`)
@@ -195,6 +224,7 @@ aiInput.addEventListener("keydown",e=>{
   if(e.key==="Enter") sendMessage();
 });
 
+// ===== Clear =====
 clearChatBtn.onclick=()=>{
   if(confirm("Clear chat?")){
     chatBody.innerHTML="";
@@ -205,10 +235,10 @@ clearChatBtn.onclick=()=>{
   }
 };
 
-// ===== FILE UPLOAD =====
+// ===== File Upload =====
 const fileInput=document.createElement("input");
 fileInput.type="file";
-fileInput.accept="image/*";
+fileInput.accept="image/*,video/*,audio/*,.txt";
 fileInput.style.display="none";
 document.body.appendChild(fileInput);
 
@@ -220,14 +250,23 @@ fileInput.onchange=()=>{
 
   const reader=new FileReader();
   reader.onload=e=>{
-    appendImage(e.target.result,"user");
+    if(file.type.startsWith("image/")){
+      appendImage(e.target.result,"user");
 
-    const imgUrl =
-      `https://image.pollinations.ai/prompt/${encodeURIComponent(file.name)}?seed=${Date.now()}`;
-
-    appendImage(imgUrl,"ai");
+      const imgURL=
+        `https://image.pollinations.ai/prompt/${encodeURIComponent(file.name)}?seed=${Date.now()}`;
+      appendImage(imgURL,"ai");
+    } else {
+      appendText(`Uploaded file: ${file.name}`,"user");
+    }
   };
   reader.readAsDataURL(file);
+};
+
+// ===== Generate Image Button =====
+generateImageBtn.onclick=()=>{
+  aiInput.value="/imagine ";
+  aiInput.focus();
 };
 
 // Initial message
