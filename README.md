@@ -6,7 +6,7 @@ This is still a bit rough, so stay with us! This is an unblocked games site in t
 
 ### Contributing:
 
-If you have any suggestions for improvements or would like to contribute and add games, a better chat system, a proxy, etc., please look at [CONTRIBUTING.md](CONTRIBUTING.md).
+If you have any suggestions for improvements or would like to contribute and add games, a better chat system, a proxy, etc., please make a pull request and make sure you test your changes before creating the request. This will save us a lot of time.
 
 ### License:
 
