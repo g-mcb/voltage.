@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>voltage. | chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<link rel="stylesheet" href="/config/custom.css"/>
+<link rel="stylesheet" href="/config/main.css">
+
+<style>
+body,input,button,.message{font-family:"Ubuntu",sans-serif!important;font-weight:700}
+:root{--blue:#003da5;--blue-dark:#002f82;--white:#fff;--muted:#cdd8ff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--blue);color:#fff;height:100vh;display:flex;flex-direction:column}
+
+.navbar{display:flex;justify-content:space-between;padding:12px 24px;background:var(--blue-dark)}
+.nav-link{color:#fff;text-decoration:none;margin-left:12px}
+.nav-link.active{background:rgba(255,255,255,.12);border-radius:6px;padding:4px 8px}
+
+.hero{text-align:center;margin-top:24px}
+.hero h1{font-size:48px;font-weight:800}
+
+.main-wrapper{flex:1;display:flex;padding:16px;gap:12px}
+.thread-list{width:200px;background:var(--blue-dark);border-radius:12px;padding:8px;overflow-y:auto;flex-shrink:0}
+.thread-item{padding:8px 12px;border-radius:6px;cursor:pointer;margin-bottom:4px;background:rgba(255,255,255,.05)}
+.thread-item.active{background:rgba(255,255,255,.15)}
+
+.chat-wrapper{flex:1;display:flex;flex-direction:column;background:var(--blue-dark);border-radius:14px;overflow:hidden}
+.chat-body{flex:1;padding:16px;overflow-y:auto}
+.message{margin-bottom:12px;line-height:1.5;font-size:15px;padding:6px 12px;border-radius:6px;word-break:break-word}
+.user-message{text-align:right;background:rgba(255,255,255,.08)}
+.other-message{background:rgba(255,255,255,.05);color:var(--muted)}
+.sender{font-size:12px;opacity:.7;margin-bottom:2px}
+.chat-input{display:flex;gap:6px;padding:8px;border-top:1px solid #ffffff22;align-items:center}
+.chat-input input{flex:1;padding:12px;background:transparent;border:none;color:#fff;font-size:15px}
+.chat-input button{width:40px;height:40px;background:transparent;border:none;color:#fff;cursor:pointer}
+img{max-width:100%;border-radius:6px;margin-top:6px}
+.footer{text-align:center;font-size:12px;opacity:.7;padding:10px}
+</style>
+</head>
+
+<body>
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="/" class="nav-logo"><i class="fa-solid fa-bolt"></i> voltage.</a>
+  </div>
+  <div class="nav-right">
+    <a href="/games.html" class="nav-link">Games</a>
+    <a href="/ai.html" class="nav-link">AI</a>
+    <a href="/chat.html" class="nav-link active">Chat</a>
+  </div>
+</nav>
+
+<div class="hero"><h1>voltage.</h1></div>
+
+<div class="main-wrapper">
+  <!-- Threads Sidebar -->
+  <div class="thread-list" id="threadList">
+    <!-- Threads injected here -->
+  </div>
+
+  <!-- Chat -->
+  <div class="chat-wrapper">
+    <div class="chat-body" id="chatBody"></div>
+
+    <div class="chat-input">
+      <button id="uploadBtn"><i class="fa-solid fa-paperclip"></i></button>
+      <input id="chatInput" placeholder="Type a message...">
+      <button id="sendMsg"><i class="fas fa-arrow-up"></i></button>
+    </div>
+  </div>
+</div>
+
+<div class="footer">Powered by dsc-dmgc</div>
+
+<script>
+const API_BASE = "https://dsc-dmgc.onrender.com";
+let THREADS = [];        // Loaded threads
+let currentThread = null;
+
+// Example logged-in user
+const currentUser = { username: "Gregory", avatar: "https://cdn.discordapp.com/embed/avatars/0.png" };
+
+const chatBody = document.getElementById("chatBody");
+const chatInput = document.getElementById("chatInput");
+const sendMsg = document.getElementById("sendMsg");
+const threadList = document.getElementById("threadList");
+const uploadBtn = document.getElementById("uploadBtn");
+
+// ====================== THREAD LIST ======================
+async function loadThreads(){
+  // Replace with real endpoint to fetch threads for user
+  // For demo, we simulate 3 threads
+  THREADS = [
+    { id:"thread1", name:"Friends" },
+    { id:"thread2", name:"Family" },
+    { id:"thread3", name:"Work" }
+  ];
+  renderThreadList();
+  selectThread(THREADS[0].id);
+}
+
+function renderThreadList(){
+  threadList.innerHTML = "";
+  THREADS.forEach(t=>{
+    const div = document.createElement("div");
+    div.className = "thread-item"+(t.id===currentThread?" active":"");
+    div.textContent = t.name;
+    div.onclick = ()=>selectThread(t.id);
+    threadList.appendChild(div);
+  });
+}
+
+function selectThread(threadId){
+  currentThread = threadId;
+  renderThreadList();
+  chatBody.innerHTML = "";
+  loadMessages(threadId);
+}
+
+// ====================== MESSAGES ======================
+async function loadMessages(threadId){
+  // Replace with real API call
+  // Demo messages
+  const demo = [
+    { username:"Alice", content:"Hello!", self:false },
+    { username:"Gregory", content:"Hi there!", self:true }
+  ];
+  demo.forEach(m=>renderMessage(m));
+}
+
+function renderMessage({ username, content, self }) {
+  const div = document.createElement("div");
+  div.className = `message ${self?"user-message":"other-message"}`;
+  if(!self){
+    const sender = document.createElement("div");
+    sender.className = "sender";
+    sender.textContent = username;
+    div.appendChild(sender);
+  }
+  if(content.startsWith("data:image")){
+    const img = document.createElement("img");
+    img.src = content;
+    div.appendChild(img);
+  } else {
+    div.appendChild(document.createTextNode(content));
+  }
+  chatBody.appendChild(div);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+// ====================== SEND MESSAGE ======================
+async function sendMessage(content){
+  if(!currentThread) return;
+  renderMessage({ username: currentUser.username, content, self:true });
+
+  await fetch(`${API_BASE}/message/send`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ threadId: currentThread, content, username: currentUser.username, avatar: currentUser.avatar })
+  });
+}
+
+sendMsg.onclick = ()=>{ 
+  const text = chatInput.value.trim(); 
+  if(!text) return; 
+  chatInput.value=""; 
+  sendMessage(text); 
+};
+chatInput.addEventListener("keypress", e=>{if(e.key==="Enter")sendMsg.click()});
+
+// ====================== IMAGE UPLOAD ======================
+const fileInput = document.createElement("input");
+fileInput.type="file";
+fileInput.accept="image/*";
+fileInput.style.display="none";
+document.body.appendChild(fileInput);
+
+uploadBtn.onclick = ()=>fileInput.click();
+fileInput.onchange = ()=>{
+  const file=fileInput.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>sendMessage(e.target.result);
+  reader.readAsDataURL(file);
+};
+
+// ====================== INIT ======================
+loadThreads();
+</script>
+
+</body>
+</html>
