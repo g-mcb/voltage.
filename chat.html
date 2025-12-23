@@ -2,28 +2,26 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>voltage. | chat</title>
+<title>voltage. | Chat</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-
-<link rel="stylesheet" href="/config/custom.css"/>
-<link rel="stylesheet" href="/config/main.css"/>
-
 <style>
 body,input,button,.message{font-family:"Ubuntu",sans-serif!important;font-weight:700}
 :root{--blue:#003da5;--blue-dark:#002f82;--white:#fff;--muted:#cdd8ff}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--blue);color:#fff;height:100vh;display:flex;flex-direction:column}
 
+/* NAVBAR */
 .navbar{display:flex;justify-content:space-between;padding:12px 24px;background:var(--blue-dark)}
 .nav-link{color:#fff;text-decoration:none;margin-left:12px}
 .nav-link.active{background:rgba(255,255,255,.12);border-radius:6px;padding:4px 8px}
 
-.hero{margin-top:100px;text-align:center}
+/* HERO */
+.hero{margin-top:80px;text-align:center}
 .hero h1{font-size:48px;font-weight:800}
 
+/* MAIN WRAPPER */
 .main-wrapper{flex:1;display:flex;padding:16px;gap:12px}
 .thread-list{width:200px;background:var(--blue-dark);border-radius:12px;padding:8px;overflow-y:auto;flex-shrink:0}
 .thread-item{padding:8px 12px;border-radius:6px;cursor:pointer;margin-bottom:4px;background:rgba(255,255,255,.05)}
@@ -60,7 +58,6 @@ img{max-width:100%;border-radius:6px;margin-top:6px}
 .modal .switch{margin-top:8px;font-size:12px;cursor:pointer;color:#9ca3af;text-decoration:underline}
 </style>
 </head>
-
 <body>
 
 <!-- NAVBAR -->
@@ -86,7 +83,6 @@ img{max-width:100%;border-radius:6px;margin-top:6px}
   <!-- Chat -->
   <div class="chat-wrapper">
     <div class="chat-body" id="chatBody"></div>
-
     <div class="chat-input">
       <button id="uploadBtn"><i class="fa-solid fa-paperclip"></i></button>
       <input id="chatInput" placeholder="Type a message...">
@@ -136,36 +132,46 @@ function showAuthModal(){ authModal.style.display="flex"; }
 function hideAuthModal(){ authModal.style.display="none"; }
 
 async function login(username,password){
-  const res = await fetch(`${API_BASE}/user/login`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({ username,password })
-  });
-  const data = await res.json();
-  if(data.success){ token=data.token; hideAuthModal(); loadThreads(); }
-  else alert("Login failed");
+  try{
+    const res = await fetch(`${API_BASE}/user/login`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ username,password })
+    });
+    const data = await res.json();
+    if(data.success){ 
+      token = data.token; 
+      hideAuthModal(); 
+      loadThreads(); 
+    } else alert("Login failed");
+  }catch(e){ alert("Error connecting to server"); console.error(e);}
 }
 
 async function signup(username,password){
-  const res = await fetch(`${API_BASE}/user/signup`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({ username,password })
-  });
-  const data = await res.json();
-  if(data.success){ token=data.token; hideAuthModal(); loadThreads(); }
-  else alert("Signup failed");
+  try{
+    const res = await fetch(`${API_BASE}/user/signup`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ username,password })
+    });
+    const data = await res.json();
+    if(data.success){ 
+      token = data.token; 
+      hideAuthModal(); 
+      loadThreads(); 
+    } else alert("Signup failed");
+  }catch(e){ alert("Error connecting to server"); console.error(e);}
 }
 
 authBtn.onclick = ()=>{
   const u = usernameInput.value.trim();
   const p = passwordInput.value.trim();
-  if(!u||!p)return alert("Enter username and password");
+  if(!u||!p) return alert("Enter username and password");
   isLogin ? login(u,p) : signup(u,p);
 };
 
 switchAuth.onclick = ()=>{
-  isLogin=!isLogin;
+  isLogin = !isLogin;
   authTitle.textContent = isLogin?"Login":"Sign Up";
   authBtn.textContent = isLogin?"Login":"Sign Up";
   switchAuth.textContent = isLogin?"Don't have an account? Sign up":"Already have an account? Login";
@@ -181,32 +187,32 @@ async function loadThreads(){
   });
   THREADS = await res.json();
   renderThreadList();
-  if(THREADS.length) selectThread(THREADS[0].id);
+  if(THREADS.length) selectThread(THREADS[0]._id || THREADS[0].id);
 }
 
 function renderThreadList(){
   threadList.innerHTML = "";
   THREADS.forEach(t=>{
     const div = document.createElement("div");
-    div.className = "thread-item"+(t.id===currentThread?" active":"");
+    div.className = "thread-item"+(t._id===currentThread?" active":"");
     div.textContent = t.name;
-    div.onclick = ()=>selectThread(t.id);
+    div.onclick = ()=>selectThread(t._id);
     threadList.appendChild(div);
   });
-  threadList.appendChild(newThreadBtn); // keep new chat button
+  threadList.appendChild(newThreadBtn);
 }
 
 // ==================== NEW THREAD ====================
 newThreadBtn.onclick = async ()=>{
   const name = prompt("Enter chat name");
   if(!name) return;
-  const res = await fetch(`${API_BASE}/thread/create`,{
+  const res = await fetch(`${API_BASE}/threads/create`,{
     method:"POST",
     headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
     body:JSON.stringify({ name, members:[usernameInput.value] })
   });
   const data = await res.json();
-  if(data.id){ loadThreads(); }
+  if(data.success){ loadThreads(); }
 };
 
 // ==================== MESSAGES ====================
@@ -215,14 +221,14 @@ async function loadMessages(threadId){
   currentThread = threadId;
   renderThreadList();
   chatBody.innerHTML="";
-  const res = await fetch(`${API_BASE}/thread/${threadId}/messages`,{
+  const res = await fetch(`${API_BASE}/message/${threadId}/messages`,{
     headers:{"Authorization":`Bearer ${token}`}
   });
   const messages = await res.json();
-  messages.forEach(m=>renderMessage({
-    username:m.username, content:m.content, self:m.username===usernameInput.value
-  }));
+  messages.forEach(m=>renderMessage({ username:m.username, content:m.content, self:m.username===usernameInput.value }));
 }
+
+function selectThread(threadId){ loadMessages(threadId); }
 
 function renderMessage({ username, content, self }){
   const div=document.createElement("div");
@@ -266,5 +272,4 @@ fileInput.onchange=()=>{
 </script>
 
 </body>
-  </html>
-  
+</html>
