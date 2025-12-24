@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
 <style>
-body,input,button,.message,.suggestion{font-family:"Ubuntu",sans-serif!important;font-weight:700}
+body,input,button,.message{font-family:"Ubuntu",sans-serif!important;font-weight:700}
 :root{--blue:#003da5;--blue-dark:#002f82;--white:#fff;--muted:#cdd8ff;--purple:#7c3aed;}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--blue);color:#fff;height:100vh;display:flex;flex-direction:column}
@@ -27,10 +27,51 @@ nav.navbar{display:flex;justify-content:space-between;align-items:center;padding
 .hero{text-align:center;margin-top:60px;position:relative;z-index:1}
 .hero h1{font-size:64px;font-weight:800}
 
-.chat-wrapper{flex:1;display:flex;justify-content:center;align-items:flex-start;padding:20px 16px;gap:16px;flex-wrap:wrap}
+#authPanel{margin:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#authPanel input{padding:8px;border-radius:6px;border:none;flex:1;min-width:120px}
+#authPanel button{padding:8px 12px;border-radius:6px;border:none;background:var(--purple);color:#fff;cursor:pointer;font-weight:700}
+#authPanel button:hover{background:#5a23b5}
 
-.chat{width:100%;max-width:720px;background:var(--blue-dark);border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
-.chat-body{flex:1;padding:16px;overflow-y:auto;min-height:300px}
+.chat-wrapper {display:flex;flex:1;padding:16px;gap:12px;align-items:flex-start;overflow:hidden}
+
+.chat-sidebar {
+  width:220px;
+  background: var(--blue-dark);
+  border-radius:12px;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-height: calc(100vh - 150px);
+  overflow-y:auto;
+}
+
+.chat-sidebar .new-chat-btn{
+  background: var(--purple);
+  color: #fff;
+  padding: 8px;
+  border-radius: 8px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.chat-sidebar .new-chat-btn:hover{background:#5a23b5}
+
+#threadList div {
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  background: rgba(255,255,255,0.05);
+}
+#threadList div:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+.chat {flex:1;display:flex;flex-direction:column;background:var(--blue-dark);border-radius:12px;overflow:hidden}
+.chat-body {flex:1;padding:16px;overflow-y:auto;min-height:300px}
 
 .message{margin-bottom:12px;line-height:1.5;font-size:15px;position:relative;padding:6px 12px;border-radius:6px;word-break:break-word}
 .user-message{text-align:right;background:rgba(255,255,255,.05)}
@@ -43,26 +84,6 @@ nav.navbar{display:flex;justify-content:space-between;align-items:center;padding
 
 img{max-width:100%;border-radius:6px;margin-top:6px}
 .footer{text-align:center;font-size:12px;opacity:.7;padding:10px}
-
-.new-chat-btn{
-  background: var(--purple);
-  color: #fff;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-.new-chat-btn:hover{background:#5a23b5}
-
-#authPanel{margin-bottom:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-#authPanel input{padding:8px;border-radius:6px;border:none;flex:1;min-width:120px}
-#authPanel button{padding:8px 12px;border-radius:6px;border:none;background:var(--purple);color:#fff;cursor:pointer;font-weight:700}
-#authPanel button:hover{background:#5a23b5}
 </style>
 </head>
 <body>
@@ -96,39 +117,36 @@ img{max-width:100%;border-radius:6px;margin-top:6px}
 </div>
 
 <div class="chat-wrapper">
+  <!-- Sidebar -->
+  <div class="chat-sidebar">
+    <button class="new-chat-btn" id="newChatBtn"><i class="fa-solid fa-plus"></i> New Chat</button>
+    <div id="threadList"></div>
+  </div>
+
+  <!-- Chat area -->
   <div class="chat">
     <div class="chat-body" id="chatBody"></div>
     <div class="chat-input">
       <button class="clear-btn" id="clearChatBtn"><i class="fa-solid fa-trash"></i></button>
       <input id="chatInput" placeholder="Type a message...">
-      <button class="new-chat-btn" id="newChatBtn"><i class="fa-solid fa-plus"></i> New Chat</button>
       <button id="sendMsgBtn"><i class="fas fa-arrow-up"></i></button>
     </div>
   </div>
 </div>
 
-<div class="footer">
-  Credit to <a href="https://petezahgames.com/" style="color:#fff">PeteZah</a>
-</div>
 
 <script>
 const API_BASE = "https://dsc-dmgc.onrender.com";
 let token = null;
 let threads = [];
 let currentThread = null;
-const chatBody = document.getElementById("chatBody");
-const chatInput = document.getElementById("chatInput");
 
 // ===== Auth =====
 document.getElementById("signupBtn").onclick = async ()=>{
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
-  if(!username || !password) return alert("Enter username/password");
-  const res = await fetch(API_BASE+"/user/signup", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({username,password})
-  }).then(r=>r.json());
+  if(!username||!password)return alert("Enter username/password");
+  const res = await fetch(API_BASE+"/user/signup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,password})}).then(r=>r.json());
   if(res.success){ token=res.token; loadThreads(); }
   else alert("Signup failed: "+(res.error||"Unknown"));
 }
@@ -136,12 +154,8 @@ document.getElementById("signupBtn").onclick = async ()=>{
 document.getElementById("loginBtn").onclick = async ()=>{
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
-  if(!username || !password) return alert("Enter username/password");
-  const res = await fetch(API_BASE+"/user/login", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({username,password})
-  }).then(r=>r.json());
+  if(!username||!password)return alert("Enter username/password");
+  const res = await fetch(API_BASE+"/user/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,password})}).then(r=>r.json());
   if(res.success){ token=res.token; loadThreads(); }
   else alert("Login failed: "+(res.error||"Unknown"));
 }
@@ -154,17 +168,13 @@ async function loadThreads(){
 }
 
 function renderThreads(){
-  chatBody.innerHTML="";
+  const threadList = document.getElementById("threadList");
+  threadList.innerHTML="";
   threads.forEach(t=>{
     const div=document.createElement("div");
     div.textContent=t.name;
-    div.style.cursor="pointer";
-    div.style.padding="6px 12px";
-    div.style.background="rgba(255,255,255,0.05)";
-    div.style.marginBottom="4px";
-    div.style.borderRadius="6px";
     div.onclick=()=>loadMessages(t._id);
-    chatBody.appendChild(div);
+    threadList.appendChild(div);
   });
 }
 
@@ -172,6 +182,7 @@ function renderThreads(){
 async function loadMessages(threadId){
   currentThread=threadId;
   const msgs = await fetch(`${API_BASE}/message/${threadId}/messages`,{headers:{Authorization:"Bearer "+token}}).then(r=>r.json());
+  const chatBody=document.getElementById("chatBody");
   chatBody.innerHTML="";
   msgs.forEach(m=>{
     const div=document.createElement("div");
@@ -183,38 +194,28 @@ async function loadMessages(threadId){
 }
 
 // ===== Send Message =====
-document.getElementById("sendMsgBtn").onclick = async ()=>{
-  if(!currentThread) return alert("Select a thread first");
-  const content = chatInput.value.trim();
-  if(!content) return;
-  await fetch(API_BASE+"/message/send",{
-    method:"POST",
-    headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
-    body:JSON.stringify({threadId:currentThread,content,username:document.getElementById("username").value})
-  });
-  chatInput.value="";
+document.getElementById("sendMsgBtn").onclick=async()=>{
+  if(!currentThread)return alert("Select a thread first");
+  const content=document.getElementById("chatInput").value.trim();
+  if(!content)return;
+  await fetch(API_BASE+"/message/send",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({threadId:currentThread,content,username:document.getElementById("username").value})});
+  document.getElementById("chatInput").value="";
   loadMessages(currentThread);
 }
 
-// ===== New Chat Button =====
-document.getElementById("newChatBtn").onclick = async ()=>{
-  const name = prompt("Enter thread name");
-  if(!name) return;
-  const members = prompt("Enter usernames to add (comma separated)").split(",").map(s=>s.trim());
-  const res = await fetch(API_BASE+"/threads/create",{
-    method:"POST",
-    headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
-    body:JSON.stringify({name,members})
-  }).then(r=>r.json());
+// ===== New Chat =====
+document.getElementById("newChatBtn").onclick=async()=>{
+  const name=prompt("Enter thread name");
+  if(!name)return;
+  const members=prompt("Enter usernames to add (comma separated)").split(",").map(s=>s.trim());
+  const res=await fetch(API_BASE+"/threads/create",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({name,members})}).then(r=>r.json());
   if(res.success) loadThreads();
   else alert("Failed to create thread");
 }
 
 // ===== Clear Chat =====
-document.getElementById("clearChatBtn").onclick = ()=>{
-  if(confirm("Clear chat body?")){
-    chatBody.innerHTML="";
-  }
+document.getElementById("clearChatBtn").onclick=()=>{
+  if(confirm("Clear chat view?")) document.getElementById("chatBody").innerHTML="";
 }
 </script>
 
